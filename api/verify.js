@@ -33,25 +33,25 @@ export default async function handler(req, res) {
   const trackingCookieKey = cookies['alt_tracker_id'];
   let browserAltDetected = null;
 
-  // 2. Safe Browser Cookie Cross-Referencing using Pipeline/Exists check
+  // 2. Safe Browser Cookie Cross-Referencing
   if (trackingCookieKey) {
     const browserRedisKey = `device_track:${trackingCookieKey}`;
     try {
-      const exists = await redis.exists(browserRedisKey);
-      if (exists) {
-        const previousBrowserUsers = await redis.smembers(browserRedisKey);
-        if (Array.isArray(previousBrowserUsers) && previousBrowserUsers.length > 0) {
-          const otherBrowserAlts = previousBrowserUsers.filter(id => String(id) !== String(user_id));
-          if (otherBrowserAlts.length > 0) {
-            browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
-          }
+      const previousBrowserUsers = await redis.smembers(browserRedisKey);
+      if (Array.isArray(previousBrowserUsers) && previousBrowserUsers.length > 0) {
+        const otherBrowserAlts = previousBrowserUsers.filter(id => String(id) !== String(user_id));
+        if (otherBrowserAlts.length > 0) {
+          browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
         }
       }
+    } catch (err) {
+      // Key likely doesn't exist yet, which is totally normal
+    }
+
+    try {
       await redis.sadd(browserRedisKey, user_id);
       await redis.expire(browserRedisKey, 60 * 60 * 24 * 90);
-    } catch (err) {
-      console.error("Browser tracking handled error:", err);
-    }
+    } catch (err) {}
   }
 
   const newTrackingId = trackingCookieKey || Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -63,26 +63,26 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // 3. Safe IP Cross-Referencing using Exists check to prevent smembers errors
+  // 3. Safe IP Cross-Referencing
   let ipAltWarning = null;
   if (ip !== "Unknown IP") {
     const ipRedisKey = `ip_track_v2:${ip}`;
     try {
-      const ipExists = await redis.exists(ipRedisKey);
-      if (ipExists) {
-        const previousIpUsers = await redis.smembers(ipRedisKey);
-        if (Array.isArray(previousIpUsers) && previousIpUsers.length > 0) {
-          const otherIpAlts = previousIpUsers.filter(id => String(id) !== String(user_id));
-          if (otherIpAlts.length > 0) {
-            ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
-          }
+      const previousIpUsers = await redis.smembers(ipRedisKey);
+      if (Array.isArray(previousIpUsers) && previousIpUsers.length > 0) {
+        const otherIpAlts = previousIpUsers.filter(id => String(id) !== String(user_id));
+        if (otherIpAlts.length > 0) {
+          ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
         }
       }
+    } catch (err) {
+      // Key doesn't exist yet on first visit, safe to ignore
+    }
+
+    try {
       await redis.sadd(ipRedisKey, user_id);
       await redis.expire(ipRedisKey, 60 * 60 * 24 * 30);
-    } catch (redisErr) {
-      console.error("IP tracking handled error:", redisErr);
-    }
+    } catch (err) {}
   }
 
   // 4. Fetch Discord User Details (Age & Public Flags)
