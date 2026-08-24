@@ -34,45 +34,49 @@ export default async function handler(req, res) {
   const trackingCookieKey = cookies['alt_tracker_id'];
   let browserAltDetected = null;
 
-  // 2. Browser Cookie & Device Tracking Cross-Referencing
+  // 2. Safe Browser Cookie & Device Tracking Cross-Referencing
   if (trackingCookieKey) {
     const browserRedisKey = `device_track:${trackingCookieKey}`;
     try {
-      let previousBrowserUsers = await redis.smembers(browserRedisKey) || [];
+      const previousBrowserUsers = await redis.smembers(browserRedisKey);
+      if (Array.isArray(previousBrowserUsers) && previousBrowserUsers.length > 0) {
+        const otherBrowserAlts = previousBrowserUsers.filter(id => String(id) !== String(user_id));
+        if (otherBrowserAlts.length > 0) {
+          browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
+        }
+      }
       await redis.sadd(browserRedisKey, user_id);
       await redis.expire(browserRedisKey, 60 * 60 * 24 * 90); // 90 days retention
-
-      const otherBrowserAlts = previousBrowserUsers.filter(id => String(id) !== String(user_id));
-      if (otherBrowserAlts.length > 0) {
-        browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
-      }
     } catch (err) {
-      console.error("Browser tracking Redis error:", err);
+      console.error("Browser tracking Redis error handled:", err);
     }
   }
 
   const newTrackingId = trackingCookieKey || Math.random().toString(36).substring(2) + Date.now().toString(36);
   if (!trackingCookieKey) {
     try {
-      await redis.sadd(`device_track:${newTrackingId}`, user_id);
-      await redis.expire(`device_track:${newTrackingId}`, 60 * 60 * 24 * 90);
+      const browserRedisKey = `device_track:${newTrackingId}`;
+      await redis.sadd(browserRedisKey, user_id);
+      await redis.expire(browserRedisKey, 60 * 60 * 24 * 90);
     } catch (err) {}
   }
 
-  // 3. IP Cross-Referencing (Fallback)
+  // 3. Safe IP Cross-Referencing (Fallback)
   let ipAltWarning = null;
   if (ip !== "Unknown IP") {
     const ipRedisKey = `ip_track_v2:${ip}`;
-    let previousIpUsers = [];
     try {
-      previousIpUsers = await redis.smembers(ipRedisKey) || [];
+      const previousIpUsers = await redis.smembers(ipRedisKey);
+      if (Array.isArray(previousIpUsers) && previousIpUsers.length > 0) {
+        const otherIpAlts = previousIpUsers.filter(id => String(id) !== String(user_id));
+        if (otherIpAlts.length > 0) {
+          ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
+        }
+      }
       await redis.sadd(ipRedisKey, user_id);
       await redis.expire(ipRedisKey, 60 * 60 * 24 * 30);
-    } catch (redisErr) {}
-
-    const otherIpAlts = previousIpUsers.filter(id => String(id) !== String(user_id));
-    if (otherIpAlts.length > 0) {
-      ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
+    } catch (redisErr) {
+      console.error("IP tracking Redis error handled:", redisErr);
     }
   }
 
