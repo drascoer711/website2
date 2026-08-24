@@ -18,7 +18,6 @@ export default async function handler(req, res) {
   const acceptLanguage = req.headers["accept-language"] || "Unknown Language";
   const referer = req.headers["referer"] || "Direct / Unknown";
   
-  // Client Hints for precise OS/Browser detection
   const mobileHint = req.headers["sec-ch-ua-mobile"] === "?1" ? "Mobile" : "Desktop";
   const platformHint = req.headers["sec-ch-ua-platform"] ? req.headers["sec-ch-ua-platform"].replace(/"/g, "") : "Unknown OS";
 
@@ -34,21 +33,24 @@ export default async function handler(req, res) {
   const trackingCookieKey = cookies['alt_tracker_id'];
   let browserAltDetected = null;
 
-  // 2. Safe Browser Cookie & Device Tracking Cross-Referencing
+  // 2. Safe Browser Cookie Cross-Referencing using Pipeline/Exists check
   if (trackingCookieKey) {
     const browserRedisKey = `device_track:${trackingCookieKey}`;
     try {
-      const previousBrowserUsers = await redis.smembers(browserRedisKey);
-      if (Array.isArray(previousBrowserUsers) && previousBrowserUsers.length > 0) {
-        const otherBrowserAlts = previousBrowserUsers.filter(id => String(id) !== String(user_id));
-        if (otherBrowserAlts.length > 0) {
-          browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
+      const exists = await redis.exists(browserRedisKey);
+      if (exists) {
+        const previousBrowserUsers = await redis.smembers(browserRedisKey);
+        if (Array.isArray(previousBrowserUsers) && previousBrowserUsers.length > 0) {
+          const otherBrowserAlts = previousBrowserUsers.filter(id => String(id) !== String(user_id));
+          if (otherBrowserAlts.length > 0) {
+            browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
+          }
         }
       }
       await redis.sadd(browserRedisKey, user_id);
-      await redis.expire(browserRedisKey, 60 * 60 * 24 * 90); // 90 days retention
+      await redis.expire(browserRedisKey, 60 * 60 * 24 * 90);
     } catch (err) {
-      console.error("Browser tracking Redis error handled:", err);
+      console.error("Browser tracking handled error:", err);
     }
   }
 
@@ -61,22 +63,25 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // 3. Safe IP Cross-Referencing (Fallback)
+  // 3. Safe IP Cross-Referencing using Exists check to prevent smembers errors
   let ipAltWarning = null;
   if (ip !== "Unknown IP") {
     const ipRedisKey = `ip_track_v2:${ip}`;
     try {
-      const previousIpUsers = await redis.smembers(ipRedisKey);
-      if (Array.isArray(previousIpUsers) && previousIpUsers.length > 0) {
-        const otherIpAlts = previousIpUsers.filter(id => String(id) !== String(user_id));
-        if (otherIpAlts.length > 0) {
-          ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
+      const ipExists = await redis.exists(ipRedisKey);
+      if (ipExists) {
+        const previousIpUsers = await redis.smembers(ipRedisKey);
+        if (Array.isArray(previousIpUsers) && previousIpUsers.length > 0) {
+          const otherIpAlts = previousIpUsers.filter(id => String(id) !== String(user_id));
+          if (otherIpAlts.length > 0) {
+            ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
+          }
         }
       }
       await redis.sadd(ipRedisKey, user_id);
       await redis.expire(ipRedisKey, 60 * 60 * 24 * 30);
     } catch (redisErr) {
-      console.error("IP tracking Redis error handled:", redisErr);
+      console.error("IP tracking handled error:", redisErr);
     }
   }
 
@@ -94,7 +99,6 @@ export default async function handler(req, res) {
       if (discordResponse.ok) {
         const userData = await discordResponse.json();
         
-        // Age calculation via Snowflake
         const snowflake = BigInt(user_id);
         const timestamp = Number((snowflake >> 22n) + 1420070400000n);
         const createdDate = new Date(timestamp);
@@ -107,7 +111,6 @@ export default async function handler(req, res) {
           altFlags = `✅ Account age normal (**${accountAgeDays} days old**).`;
         }
 
-        // Public Flags / Badges parsing
         const flags = userData.public_flags || 0;
         const flagList = [];
         if (flags & (1 << 0)) flagList.push("Staff");
@@ -189,7 +192,6 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // Set tracking cookie and redirect back to your main Vercel website
   res.setHeader('Set-Cookie', `alt_tracker_id=${newTrackingId}; Path=/; Max-Age=${60*60*24*90}; HttpOnly; Secure; SameSite=Lax`);
   res.writeHead(302, { Location: "https://website2-umber-zeta.vercel.app/" });
   res.end();
