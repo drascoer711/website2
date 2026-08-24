@@ -9,12 +9,20 @@ export default async function handler(req, res) {
     return res.status(400).send("Missing user_id parameter.");
   }
 
-  // 1. Extract IP and browser cookies
+  // 1. Extract Advanced Telemetry, IP, Geo, and Headers
   const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "Unknown IP";
   const country = req.headers["x-vercel-ip-country"] || "Unknown Country";
+  const region = req.headers["x-vercel-ip-country-region"] || "Unknown Region";
+  const city = decodeURIComponent(req.headers["x-vercel-ip-city"] || "Unknown City");
   const userAgent = req.headers["user-agent"] || "Unknown Device";
+  const acceptLanguage = req.headers["accept-language"] || "Unknown Language";
+  const referer = req.headers["referer"] || "Direct / Unknown";
+  
+  // Client Hints for precise OS/Browser detection
+  const mobileHint = req.headers["sec-ch-ua-mobile"] === "?1" ? "Mobile" : "Desktop";
+  const platformHint = req.headers["sec-ch-ua-platform"] ? req.headers["sec-ch-ua-platform"].replace(/"/g, "") : "Unknown OS";
 
-  // Parse cookies from request headers to look for previous alt trackers
+  // Parse cookies for alt tracking
   const cookieHeader = req.headers.cookie || "";
   const cookies = Object.fromEntries(
     cookieHeader.split(';').map(cookie => {
@@ -26,7 +34,7 @@ export default async function handler(req, res) {
   const trackingCookieKey = cookies['alt_tracker_id'];
   let browserAltDetected = null;
 
-  // 2. Browser Cookie & Fingerprint Cross-Referencing
+  // 2. Browser Cookie & Device Tracking Cross-Referencing
   if (trackingCookieKey) {
     const browserRedisKey = `device_track:${trackingCookieKey}`;
     try {
@@ -43,7 +51,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Generate a unique tracking token for this browser if they don't have one
   const newTrackingId = trackingCookieKey || Math.random().toString(36).substring(2) + Date.now().toString(36);
   if (!trackingCookieKey) {
     try {
@@ -52,7 +59,7 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // 3. IP Cross-Referencing (Fallback backup)
+  // 3. IP Cross-Referencing (Fallback)
   let ipAltWarning = null;
   if (ip !== "Unknown IP") {
     const ipRedisKey = `ip_track_v2:${ip}`;
@@ -69,9 +76,10 @@ export default async function handler(req, res) {
     }
   }
 
-  // 4. Fetch Discord user details for age check
+  // 4. Fetch Discord User Details (Age & Public Flags)
   let accountAgeDays = "Unknown";
   let altFlags = "No alt heuristics triggered.";
+  let badgeInfo = "None detected";
   const botToken = process.env.DISCORD_BOT_TOKEN; 
 
   if (botToken) {
@@ -81,10 +89,11 @@ export default async function handler(req, res) {
       });
       if (discordResponse.ok) {
         const userData = await discordResponse.json();
+        
+        // Age calculation via Snowflake
         const snowflake = BigInt(user_id);
         const timestamp = Number((snowflake >> 22n) + 1420070400000n);
         const createdDate = new Date(timestamp);
-        
         const ageTime = Date.now() - createdDate.getTime();
         accountAgeDays = Math.floor(ageTime / (1000 * 60 * 60 * 24));
 
@@ -92,6 +101,24 @@ export default async function handler(req, res) {
           altFlags = `🚨 **High Risk Alt Indicator:** Account is only **${accountAgeDays} days old**`;
         } else {
           altFlags = `✅ Account age normal (**${accountAgeDays} days old**).`;
+        }
+
+        // Public Flags / Badges parsing
+        const flags = userData.public_flags || 0;
+        const flagList = [];
+        if (flags & (1 << 0)) flagList.log("Staff");
+        if (flags & (1 << 1)) flagList.push("Partner");
+        if (flags & (1 << 2)) flagList.push("HypeSquad Events");
+        if (flags & (1 << 3)) flagList.push("Bug Hunter Level 1");
+        if (flags & (1 << 6)) flagList.push("HypeSquad Bravery");
+        if (flags & (1 << 7)) flagList.push("HypeSquad Brilliance");
+        if (flags & (1 << 8)) flagList.push("HypeSquad Balance");
+        if (flags & (1 << 9)) flagList.push("Early Supporter");
+        if (flags & (1 << 14)) flagList.push("Bug Hunter Level 2");
+        if (flags & (1 << 17)) flagList.push("Early Verified Bot Developer");
+        
+        if (flagList.length > 0) {
+          badgeInfo = flagList.join(", ");
         }
       }
     } catch (err) {}
@@ -101,8 +128,16 @@ export default async function handler(req, res) {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (webhookUrl) {
     const fields = [
-      { name: "🌐 Network IP & Country", value: `\`${ip}\` (${country})`, inline: false },
-      { name: "🕵️ Account Age Check", value: altFlags, inline: false }
+      {
+        name: "🌐 Network & Location Diagnostics",
+        value: `• **IP:** \`${ip}\`\n• **Location:** \`${city}, ${region}, ${country}\``,
+        inline: false
+      },
+      {
+        name: "🕵️ Account Age & Badges",
+        value: `• ${altFlags}\n• **Badges:** \`${badgeInfo}\``,
+        inline: false
+      }
     ];
 
     if (browserAltDetected) {
@@ -121,6 +156,18 @@ export default async function handler(req, res) {
       });
     }
 
+    fields.push({
+      name: "💻 Device & Browser Telemetry",
+      value: `• **Platform:** \`${platformHint} (${mobileHint})\`\n• **Language:** \`${acceptLanguage.split(',')[0]}\`\n• **Referrer:** \`${referer.substring(0, 80)}\``,
+      inline: false
+    });
+
+    fields.push({
+      name: "🛠️ Raw User-Agent Header",
+      value: `\`\`\`text\n${userAgent.substring(0, 180)}\n\`\`\``,
+      inline: false
+    });
+
     const embed = {
       title: "🛡️ Advanced Telemetry & Device Fingerprint",
       description: `User <@${user_id}> (\`${user_id}\`) triggered the verification gate.`,
@@ -138,7 +185,7 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // Set the tracking cookie in the user's browser for 90 days before redirecting
+  // Set tracking cookie and redirect
   res.setHeader('Set-Cookie', `alt_tracker_id=${newTrackingId}; Path=/; Max-Age=${60*60*24*90}; HttpOnly; Secure; SameSite=Lax`);
   res.writeHead(302, { Location: "https://discord.com" });
   res.end();
