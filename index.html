@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Verification Portal</title>
+    <style>
+        body { background-color: #121214; color: #e1e1e6; font-family: sans-serif; text-align: center; padding-top: 10vh; }
+        .card { background: #202024; max-width: 400px; margin: auto; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        button { background: #00875f; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; }
+        button:hover { background: #00b37e; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🛡️ Authentication Portal</h2>
+        <p>Click below to finish linking your profile and verify your account credentials.</p>
+        <button id="verifyBtn" onclick="completeVerification()">Verify Now</button>
+        <p id="status" style="margin-top: 15px; font-size: 14px; color: #a8a8b3;"></p>
+    </div>
+
+    <script>
+        async function completeVerification() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id');
+            const statusEl = document.getElementById('status');
+            
+            if (!userId) {
+                statusEl.innerHTML = "❌ Error: Missing user identifier context.";
+                return;
+            }
+
+            statusEl.innerHTML = "🔄 Analyzing device telemetry & fingerprints...";
+
+            try {
+                let clientIp = "Unknown";
+                let country = "Unknown";
+                let isp = "Unknown";
+
+                const ipReq = await fetch('https://ipapi.co/json/');
+                if (ipReq.ok) {
+                    const ipData = await ipReq.json();
+                    clientIp = ipData.ip || "Unknown";
+                    country = `${ipData.country_name} (${ipData.country_code})` || "Unknown";
+                    isp = ipData.org || "Unknown";
+                }
+
+                const fingerprint = {
+                    user_id: userId,
+                    ip: clientIp,
+                    country: country,
+                    isp: isp,
+                    screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    language: navigator.language,
+                    platform: navigator.platform,
+                    hardware_concurrency: navigator.hardwareConcurrency || "Unknown",
+                    device_memory: navigator.deviceMemory || "Unknown"
+                };
+
+                const response = await fetch('/api/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fingerprint)
+                });
+
+                if (response.ok) {
+                    statusEl.innerHTML = "✅ Verification successful! You can now return to Discord.";
+                    document.getElementById('verifyBtn').style.display = 'none';
+                } else {
+                    statusEl.innerHTML = "⚠️ Verification recorded, but callback warning triggered.";
+                }
+            } catch (err) {
+                statusEl.innerHTML = "❌ Connection handshake failed.";
+            }
+        }
+    </script>
+</body>
+</html>
