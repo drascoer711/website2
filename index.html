@@ -5,7 +5,9 @@
   <title>Verifying...</title>
 </head>
 <body>
-  <h2>Verifying your session, please wait...</h2>
+  <div id="status-container">
+    <h2 id="status-heading">Verifying your session, please wait...</h2>
+  </div>
 
   <script>
     async function startVerification() {
@@ -14,7 +16,7 @@
       const userId = urlParams.get('user_id');
 
       if (!userId) {
-        document.body.innerHTML = "<h3>Error: Missing user_id parameter.</h3>";
+        document.getElementById('status-container').innerHTML = "<h3 id='error-message'>Error: Missing user_id parameter.</h3>";
         return;
       }
 
