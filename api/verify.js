@@ -106,7 +106,7 @@ export default async function handler(req, res) {
         // Public Flags / Badges parsing
         const flags = userData.public_flags || 0;
         const flagList = [];
-        if (flags & (1 << 0)) flagList.log("Staff");
+        if (flags & (1 << 0)) flagList.push("Staff");
         if (flags & (1 << 1)) flagList.push("Partner");
         if (flags & (1 << 2)) flagList.push("HypeSquad Events");
         if (flags & (1 << 3)) flagList.push("Bug Hunter Level 1");
@@ -185,8 +185,8 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // Set tracking cookie and redirect
+  // Set tracking cookie and redirect back to your main Vercel website
   res.setHeader('Set-Cookie', `alt_tracker_id=${newTrackingId}; Path=/; Max-Age=${60*60*24*90}; HttpOnly; Secure; SameSite=Lax`);
-  res.writeHead(302, { Location: "https://discord.com" });
+  res.writeHead(302, { Location: "https://website2-umber-zeta.vercel.app/" });
   res.end();
 }
