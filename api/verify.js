@@ -21,6 +21,30 @@ export default async function handler(req, res) {
   const mobileHint = req.headers["sec-ch-ua-mobile"] === "?1" ? "Mobile" : "Desktop";
   const platformHint = req.headers["sec-ch-ua-platform"] ? req.headers["sec-ch-ua-platform"].replace(/"/g, "") : "Unknown OS";
 
+  // 2. Check IP against VPN / Proxy / Datacenter APIs
+  let vpnDetected = false;
+  let vpnDetails = "None detected";
+  
+  if (ip !== "Unknown IP" && ip !== "127.0.0.1" && ip !== "::1") {
+    try {
+      // Using ipwho.is (Free tier, no key required for basic checks)
+      const ipCheckRes = await fetch(`https://ipwho.is/${ip}`);
+      if (ipCheckRes.ok) {
+        const ipData = await ipCheckRes.json();
+        if (ipData.success && ipData.connection) {
+          const { type, isp, org } = ipData.connection;
+          // Check if connection type is hosting/datacenter or proxy indicators
+          if (type === "hosting" || type === "datacenter" || /vpn|proxy|hosting|ovh|digitalocean|aws|hetzner/i.test(isp + org)) {
+            vpnDetected = true;
+            vpnDetails = `ISP: ${isp || 'Unknown'} | Org: ${org || 'Unknown'} | Type: ${type || 'Hosting/VPN'}`;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("VPN check error:", err);
+    }
+  }
+
   // Parse cookies for alt tracking
   const cookieHeader = req.headers.cookie || "";
   const cookies = Object.fromEntries(
@@ -33,7 +57,7 @@ export default async function handler(req, res) {
   const trackingCookieKey = cookies['alt_tracker_id'];
   let browserAltDetected = null;
 
-  // 2. Safe Browser Cookie Cross-Referencing
+  // 3. Safe Browser Cookie Cross-Referencing
   if (trackingCookieKey) {
     const browserRedisKey = `device_track:${trackingCookieKey}`;
     try {
@@ -44,9 +68,7 @@ export default async function handler(req, res) {
           browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
         }
       }
-    } catch (err) {
-      // Key likely doesn't exist yet, which is totally normal
-    }
+    } catch (err) {}
 
     try {
       await redis.sadd(browserRedisKey, user_id);
@@ -63,7 +85,7 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // 3. Safe IP Cross-Referencing
+  // 4. Safe IP Cross-Referencing
   let ipAltWarning = null;
   if (ip !== "Unknown IP") {
     const ipRedisKey = `ip_track_v2:${ip}`;
@@ -75,9 +97,7 @@ export default async function handler(req, res) {
           ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
         }
       }
-    } catch (err) {
-      // Key doesn't exist yet on first visit, safe to ignore
-    }
+    } catch (err) {}
 
     try {
       await redis.sadd(ipRedisKey, user_id);
@@ -85,7 +105,7 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // 4. Fetch Discord User Details (Age & Public Flags)
+  // 5. Fetch Discord User Details (Age & Public Flags)
   let accountAgeDays = "Unknown";
   let altFlags = "No alt heuristics triggered.";
   let badgeInfo = "None detected";
@@ -131,13 +151,18 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // 5. Send Rich Webhook Alert to Discord Staff Logs
+  // 6. Send Rich Webhook Alert to Discord Staff Logs
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (webhookUrl) {
     const fields = [
       {
         name: "🌐 Network & Location Diagnostics",
         value: `• **IP:** \`${ip}\`\n• **Location:** \`${city}, ${region}, ${country}\``,
+        inline: false
+      },
+      {
+        name: "🛡️ VPN / Proxy Detection",
+        value: vpnDetected ? `🚨 **VPN / Proxy / Hosting Detected!**\n\`${vpnDetails}\`` : `✅ Residential / Clean Network Connection`,
         inline: false
       },
       {
@@ -169,16 +194,10 @@ export default async function handler(req, res) {
       inline: false
     });
 
-    fields.push({
-      name: "🛠️ Raw User-Agent Header",
-      value: `\`\`\`text\n${userAgent.substring(0, 180)}\n\`\`\``,
-      inline: false
-    });
-
     const embed = {
       title: "🛡️ Advanced Telemetry & Device Fingerprint",
       description: `User <@${user_id}> (\`${user_id}\`) triggered the verification gate.`,
-      color: (browserAltDetected || ipAltWarning || accountAgeDays < 7) ? 0xED4245 : 0x5865F2,
+      color: (vpnDetected || browserAltDetected || ipAltWarning || accountAgeDays < 7) ? 0xED4245 : 0x5865F2,
       fields: fields,
       timestamp: new Date().toISOString()
     };
@@ -191,6 +210,14 @@ export default async function handler(req, res) {
       });
     } catch (err) {}
   }
+
+  // OPTIONAL: If you want to completely BLOCK them from verifying if a VPN is detected, 
+  // uncomment the lines below:
+  /*
+  if (vpnDetected) {
+    return res.status(403).send("Verification blocked: Please disable your VPN, proxy, or hosting network to verify.");
+  }
+  */
 
   res.setHeader('Set-Cookie', `alt_tracker_id=${newTrackingId}; Path=/; Max-Age=${60*60*24*90}; HttpOnly; Secure; SameSite=Lax`);
   res.writeHead(302, { Location: "https://website2-umber-zeta.vercel.app/" });
