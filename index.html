@@ -2,23 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Verifying...</title>
+  <title>Session Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1f22;
+      color: #dbdee1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background-color: #2b2d31;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 100%;
+    }
+    .btn {
+      background-color: #5865f2;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+      width: 100%;
+    }
+    .btn:hover {
+      background-color: #4752c4;
+    }
+  </style>
 </head>
 <body>
-  <div id="status-container">
-    <h2 id="status-heading">Verifying your session, please wait...</h2>
+  <div class="card" id="status-container">
+    <h2>Verify Your Account</h2>
+    <p>Click the button below to complete your server verification.</p>
+    <button class="btn" id="verify-btn" onclick="startVerification()">Verify Me</button>
   </div>
 
   <script>
     async function startVerification() {
-      // Grab Discord User ID from URL (e.g. ?user_id=123456789)
       const urlParams = new URLSearchParams(window.location.search);
       let userId = urlParams.get('user_id');
 
-      // Fallback for direct testing / Vercel dashboard preview visits
+      // Fallback test ID if opened directly without a parameter
       if (!userId) {
-        userId = '123456789012345678'; 
+        userId = '123456789012345678';
       }
+
+      // Update UI to show progress
+      document.getElementById('status-container').innerHTML = `
+        <h2>Verifying...</h2>
+        <p>Gathering session metrics, please wait...</p>
+      `;
 
       // 1. Screen & Hardware Metrics
       const screenRes = `${window.screen.width}x${window.screen.height}`;
@@ -71,8 +113,6 @@
 
       window.location.href = `/api/verify?${params.toString()}`;
     }
-
-    startVerification();
   </script>
 </body>
 </html>
