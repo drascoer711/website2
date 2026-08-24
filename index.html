@@ -13,11 +13,11 @@
     async function startVerification() {
       // Grab Discord User ID from URL (e.g. ?user_id=123456789)
       const urlParams = new URLSearchParams(window.location.search);
-      const userId = urlParams.get('user_id');
+      let userId = urlParams.get('user_id');
 
+      // Fallback for direct testing / Vercel dashboard preview visits
       if (!userId) {
-        document.getElementById('status-container').innerHTML = "<h3 id='error-message'>Error: Missing user_id parameter.</h3>";
-        return;
+        userId = '123456789012345678'; 
       }
 
       // 1. Screen & Hardware Metrics
