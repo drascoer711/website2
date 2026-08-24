@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { user_id } = req.query;
 
   if (!user_id) {
@@ -14,8 +14,8 @@ export default async function handler(req, res) {
   let createdAtFormatted = "Unknown";
   let altFlags = "No alt heuristics triggered via API lookup.";
 
-  // 2. Fetch user details from Discord API to check account creation date
-  const botToken = process.env.DISCORD_BOT_TOKEN; // Add your bot token to Vercel env variables
+  // 2. Fetch user details from Discord API
+  const botToken = process.env.DISCORD_BOT_TOKEN; 
   if (botToken) {
     try {
       const discordResponse = await fetch(`https://discord.com/api/v10/users/${user_id}`, {
@@ -25,16 +25,14 @@ export default async function handler(req, res) {
       if (discordResponse.ok) {
         const userData = await discordResponse.json();
         
-        // Calculate Snowflake account creation date
         const snowflake = BigInt(user_id);
-        const timestamp = Number((snowflake >> 22.n) + 1420070400000n);
+        const timestamp = Number((snowflake >> 22n) + 1420070400000n);
         const createdDate = new Date(timestamp);
         
         createdAtFormatted = createdDate.toISOString().split('T')[0];
         const ageTime = Date.now() - createdDate.getTime();
         accountAgeDays = Math.floor(ageTime / (1000 * 60 * 60 * 24));
 
-        // Evaluate alt risk metrics based on age
         if (accountAgeDays < 7) {
           altFlags = `🚨 **High Risk Alt Indicator:** Account is only **${accountAgeDays} days old** (Created: ${createdAtFormatted})`;
         } else if (accountAgeDays < 30) {
@@ -87,7 +85,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Redirect user to success destination
   res.writeHead(302, { Location: "https://discord.com" });
   res.end();
-}
+};
