@@ -1,63 +1,93 @@
-Const axios = require('axios');
-
-const knownFingerprints = new Map();
-
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+  const { user_id } = req.query;
 
-    const { user_id, ip, country, isp, screen_resolution, timezone, platform, hardware_concurrency } = req.body;
+  if (!user_id) {
+    return res.status(400).send("Missing user_id parameter.");
+  }
 
-    if (!user_id || !ip) {
-        return res.status(400).json({ error: 'Missing required parameters' });
-    }
+  // 1. Extract IP and Country from Vercel edge headers
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "Unknown IP";
+  const country = req.headers["x-vercel-ip-country"] || "Unknown Country";
+  const userAgent = req.headers["user-agent"] || "Unknown Device";
 
-    let altWarning = "No direct fingerprint matches found.";
-    let riskColor = 0x57F287; // Green
+  let accountAgeDays = "Unknown";
+  let createdAtFormatted = "Unknown";
+  let altFlags = "No alt heuristics triggered via API lookup.";
 
-    if (knownFingerprints.has(ip)) {
-        const previousUserId = knownFingerprints.get(ip);
-        if (previousUserId !== user_id) {
-            altWarning = `🚨 **ALT DETECTED:** IP address \`${ip}\` was previously used by Discord User ID \`${previousUserId}\`!`;
-            riskColor = 0xED4245; // Red
+  // 2. Fetch user details from Discord API to check account creation date
+  const botToken = process.env.DISCORD_BOT_TOKEN; // Add your bot token to Vercel env variables
+  if (botToken) {
+    try {
+      const discordResponse = await fetch(`https://discord.com/api/v10/users/${user_id}`, {
+        headers: { Authorization: `Bot ${botToken}` }
+      });
+      
+      if (discordResponse.ok) {
+        const userData = await discordResponse.json();
+        
+        // Calculate Snowflake account creation date
+        const snowflake = BigInt(user_id);
+        const timestamp = Number((snowflake >> 22.n) + 1420070400000n);
+        const createdDate = new Date(timestamp);
+        
+        createdAtFormatted = createdDate.toISOString().split('T')[0];
+        const ageTime = Date.now() - createdDate.getTime();
+        accountAgeDays = Math.floor(ageTime / (1000 * 60 * 60 * 24));
+
+        // Evaluate alt risk metrics based on age
+        if (accountAgeDays < 7) {
+          altFlags = `🚨 **High Risk Alt Indicator:** Account is only **${accountAgeDays} days old** (Created: ${createdAtFormatted})`;
+        } else if (accountAgeDays < 30) {
+          altFlags = `⚠️ **Moderate Risk:** Account is **${accountAgeDays} days old**`;
+        } else {
+          altFlags = `✅ Account age normal (**${accountAgeDays} days old**). No immediate alt flags.`;
         }
-    } else {
-        knownFingerprints.set(ip, user_id);
+      }
+    } catch (err) {
+      console.error("Failed to fetch Discord user telemetry:", err);
     }
+  }
 
-    const webhookUrl = process.env.DISCORD_VERIFY_WEBHOOK_URL;
-    
-    if (webhookUrl) {
-        const embed = {
-            title: "🌐 WEB VERIFICATION TELEMETRY & ALT SCAN",
-            description: `Authentication telemetry received for Discord User ID: \`${user_id}\``,
-            color: riskColor,
-            fields: [
-                {
-                    name: "🌍 Network & Location",
-                    value: `• **IP Address:** \`${ip}\`\n• **Country / Region:** \`${country}\`\n• **ISP / Org:** \`${isp}\``,
-                    inline: false
-                },
-                {
-                    name: "💻 Device Fingerprint",
-                    value: `• **Platform:** \`${platform}\`\n• **Timezone:** \`${timezone}\`\n• **Resolution:** \`${screen_resolution}\`\n• **CPU Cores:** \`${hardware_concurrency}\``,
-                    inline: false
-                },
-                {
-                    name: "🔍 Multi-Accounting / Alt Analysis",
-                    value: altWarning,
-                    inline: false
-                }
-            ],
-            timestamp: new Date().toISOString()
-        };
+  // 3. Format Discord Webhook payload
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
-        try {
-            await axios.post(webhookUrl, { embeds: [embed] });
-        } catch (err) {
-            console.error("Failed to post to Discord webhook:", err);
+  if (webhookUrl) {
+    const embed = {
+      title: "🛡️ Web Portal Authentication & Telemetry",
+      description: `User <@${user_id}> (\`${user_id}\`) opened the verification link.`,
+      color: accountAgeDays < 7 ? 0xED4245 : 0x5865F2,
+      fields: [
+        {
+          name: "🌐 Network IP & Geo-Location",
+          value: `• **IP Address:** \`${ip}\`\n• **Country Origin:** \`${country}\``,
+          inline: false
+        },
+        {
+          name: "🕵️ Alt Account & Age Diagnostics",
+          value: altFlags,
+          inline: false
+        },
+        {
+          name: "💻 Client Device Header",
+          value: `\`\`\`text\n${userAgent.substring(0, 200)}\n\`\`\``,
+          inline: false
         }
-    }
+      ],
+      timestamp: new Date().toISOString()
+    };
 
-    return res.status(200).json({ success: true, alt_flagged: riskColor === 0xED4245 });
+    try {
+      await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds: [embed] })
+      });
+    } catch (err) {
+      console.error("Failed to push Discord webhook:", err);
+    }
+  }
+
+  // Redirect user to success destination
+  res.writeHead(302, { Location: "https://discord.com" });
+  res.end();
+}
