@@ -51,29 +51,20 @@ export default async function handler(req, res) {
     }
   }
 
-  // 3. IP Cross-Referencing (The Alt Trap) with safe error handling
+  // 3. IP Cross-Referencing using a fresh key prefix to avoid type conflicts
   let ipAltWarning = null;
   if (ip !== "Unknown IP") {
-    const redisKey = `ip_track:${ip}`;
+    const redisKey = `ip_track_v2:${ip}`;
     let previousUsers = [];
 
     try {
-      // Fetch all previously seen user IDs for this IP
       previousUsers = await redis.smembers(redisKey) || [];
-      
-      // Ensure current user is added to this IP's set
       await redis.sadd(redisKey, user_id);
-      // Set expiration on the IP key so it doesn't grow forever (e.g., 30 days)
       await redis.expire(redisKey, 60 * 60 * 24 * 30);
     } catch (redisErr) {
-      console.error("Redis type mismatch or error, resetting key:", redisErr);
-      // If the key was created as a string previously, delete it and recreate it as a set
-      await redis.del(redisKey);
-      await redis.sadd(redisKey, user_id);
-      await redis.expire(redisKey, 60 * 60 * 24 * 30);
+      console.error("Redis error handled safely:", redisErr);
     }
 
-    // Filter out the current user to see if *other* accounts used this IP
     const otherAccounts = previousUsers.filter(id => id !== user_id);
 
     if (otherAccounts.length > 0) {
@@ -99,7 +90,6 @@ export default async function handler(req, res) {
       }
     ];
 
-    // Append IP alt warning if triggered
     if (ipAltWarning) {
       fields.push({
         name: "🔗 Shared Network / Alt Alert",
