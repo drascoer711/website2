@@ -1,79 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Verification Portal</title>
-    <style>
-        body { background-color: #121214; color: #e1e1e6; font-family: sans-serif; text-align: center; padding-top: 10vh; }
-        .card { background: #202024; max-width: 400px; margin: auto; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        button { background: #00875f; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; }
-        button:hover { background: #00b37e; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Verifying...</title>
 </head>
 <body>
-    <div class="card">
-        <h2>🛡️ Authentication Portal</h2>
-        <p>Click below to finish linking your profile and verify your account credentials.</p>
-        <button id="verifyBtn" onclick="completeVerification()">Verify Now</button>
-        <p id="status" style="margin-top: 15px; font-size: 14px; color: #a8a8b3;"></p>
-    </div>
+  <h2>Verifying your session, please wait...</h2>
 
-    <script>
-        async function completeVerification() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('user_id');
-            const statusEl = document.getElementById('status');
-            
-            if (!userId) {
-                statusEl.innerHTML = "❌ Error: Missing user identifier context.";
-                return;
-            }
+  <script>
+    async function startVerification() {
+      // Grab Discord User ID from URL (e.g. ?user_id=123456789)
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('user_id');
 
-            statusEl.innerHTML = "🔄 Analyzing device telemetry & fingerprints...";
+      if (!userId) {
+        document.body.innerHTML = "<h3>Error: Missing user_id parameter.</h3>";
+        return;
+      }
 
-            try {
-                let clientIp = "Unknown";
-                let country = "Unknown";
-                let isp = "Unknown";
+      // 1. Screen & Hardware Metrics
+      const screenRes = `${window.screen.width}x${window.screen.height}`;
+      const colorDepth = window.screen.colorDepth;
+      const touchPoints = navigator.maxTouchPoints || 0;
 
-                const ipReq = await fetch('https://ipapi.co/json/');
-                if (ipReq.ok) {
-                    const ipData = await ipReq.json();
-                    clientIp = ipData.ip || "Unknown";
-                    country = `${ipData.country_name} (${ipData.country_code})` || "Unknown";
-                    isp = ipData.org || "Unknown";
-                }
-
-                const fingerprint = {
-                    user_id: userId,
-                    ip: clientIp,
-                    country: country,
-                    isp: isp,
-                    screen_resolution: `${window.screen.width}x${window.screen.height}`,
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    language: navigator.language,
-                    platform: navigator.platform,
-                    hardware_concurrency: navigator.hardwareConcurrency || "Unknown",
-                    device_memory: navigator.deviceMemory || "Unknown"
-                };
-
-                const response = await fetch('/api/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(fingerprint)
-                });
-
-                if (response.ok) {
-                    statusEl.innerHTML = "✅ Verification successful! You can now return to Discord.";
-                    document.getElementById('verifyBtn').style.display = 'none';
-                } else {
-                    statusEl.innerHTML = "⚠️ Verification recorded, but callback warning triggered.";
-                }
-            } catch (err) {
-                statusEl.innerHTML = "❌ Connection handshake failed.";
-            }
+      // 2. Battery Status API
+      let batteryInfo = "Unknown";
+      try {
+        if (navigator.getBattery) {
+          const b = await navigator.getBattery();
+          batteryInfo = `${Math.round(b.level * 100)}% (${b.charging ? 'Charging' : 'Discharging'})`;
         }
-    </script>
+      } catch (e) {}
+
+      // 3. WebGL GPU Vendor & Renderer Fingerprint
+      let gpuRenderer = "Unknown GPU";
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+          const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+          if (debugInfo) {
+            gpuRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+          }
+        }
+      } catch (e) {}
+
+      // 4. Canvas Rendering Hash
+      let canvasHash = "none";
+      try {
+        const c = document.createElement('canvas');
+        const ctx = c.getContext('2d');
+        ctx.textBaseline = "top";
+        ctx.font = "14px 'Arial'";
+        ctx.fillText("AltTracker_Fingerprint_2026", 2, 2);
+        canvasHash = btoa(c.toDataURL()).slice(-20);
+      } catch (e) {}
+
+      // Pack everything into query params and send to Vercel backend
+      const params = new URLSearchParams({
+        user_id: userId,
+        res: screenRes,
+        depth: colorDepth,
+        touch: touchPoints,
+        battery: batteryInfo,
+        gpu: gpuRenderer,
+        canvas: canvasHash
+      });
+
+      window.location.href = `/api/verify?${params.toString()}`;
+    }
+
+    startVerification();
+  </script>
 </body>
 </html>
