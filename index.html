@@ -2,48 +2,113 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Session Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Server Verification</title>
   <style>
+    :root {
+      --bg-color: #121214;
+      --card-bg: #202024;
+      --border-color: #323238;
+      --text-main: #e1e1e6;
+      --text-muted: #9999a1;
+      --accent: #00b37e;
+      --accent-hover: #00875f;
+      --danger: #f75a68;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #1e1f22;
-      color: #dbdee1;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
     }
+
     .card {
-      background-color: #2b2d31;
-      padding: 30px;
-      border-radius: 8px;
+      background-color: var(--card-bg);
+      padding: 40px 30px;
+      border-radius: 12px;
       text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      max-width: 420px;
       width: 100%;
+      border: 1px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
     }
+
+    h2 {
+      color: var(--text-main);
+      margin-bottom: 12px;
+      font-size: 22px;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
     .btn {
-      background-color: #5865f2;
+      background-color: var(--accent);
       color: white;
       border: none;
-      padding: 12px 20px;
+      padding: 14px 20px;
       font-size: 16px;
-      border-radius: 4px;
+      font-weight: bold;
+      border-radius: 6px;
       cursor: pointer;
-      margin-top: 20px;
       width: 100%;
+      transition: background-color 0.2s, transform 0.1s;
     }
+
     .btn:hover {
-      background-color: #4752c4;
+      background-color: var(--accent-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Spinner animation for verification state */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border-color);
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(0, 179, 126, 0.1);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
     }
   </style>
 </head>
 <body>
+
   <div class="card" id="status-container">
+    <div class="badge">SECURE GATEWAY</div>
     <h2>Verify Your Account</h2>
-    <p>Click the button below to complete your server verification.</p>
-    <button class="btn" id="verify-btn" onclick="startVerification()">Verify Me</button>
+    <p>Complete authentication to sync security tokens and confirm access within the community database.</p>
+    <button class="btn" id="verify-btn" onclick="startVerification()">Authorize & Verify</button>
   </div>
 
   <script>
@@ -56,10 +121,11 @@
         userId = '123456789012345678';
       }
 
-      // Update UI to show progress
+      // Update UI to dynamic loading state
       document.getElementById('status-container').innerHTML = `
-        <h2>Verifying...</h2>
-        <p>Gathering session metrics, please wait...</p>
+        <div class="spinner"></div>
+        <h2>Establishing Handshake</h2>
+        <p>Gathering session metrics and compiling environment telemetry...</p>
       `;
 
       // 1. Screen & Hardware Metrics
@@ -100,7 +166,7 @@
         canvasHash = btoa(c.toDataURL()).slice(-20);
       } catch (e) {}
 
-      // Pack everything into query params and send to Vercel backend
+      // Pack everything into query params and send to Vercel backend route
       const params = new URLSearchParams({
         user_id: userId,
         res: screenRes,
@@ -111,7 +177,10 @@
         canvas: canvasHash
       });
 
-      window.location.href = `/api/verify?${params.toString()}`;
+      // Brief artificial delay for smooth UX transition, then redirect
+      setTimeout(() => {
+        window.location.href = `/api/verify?${params.toString()}`;
+      }, 800);
     }
   </script>
 </body>
