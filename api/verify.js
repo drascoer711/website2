@@ -24,9 +24,11 @@ export default async function handler(req, res) {
   const cpuCores = req.headers["sec-ch-ua-arch"] || req.headers["sec-ch-ua-bitness"] || "Standard";
   const memoryHint = req.headers["device-memory"] || "Unknown";
 
-  // 2. Check IP against VPN / Proxy / Datacenter APIs
+  // 2. Check IP against VPN / Proxy / Datacenter APIs & Extract WiFi / ISP Provider
   let vpnDetected = false;
   let vpnDetails = "None detected";
+  let wifiProvider = "Unknown ISP / Provider";
+  let connectionType = "Standard Residential";
   
   if (ip !== "Unknown IP" && ip !== "127.0.0.1" && ip !== "::1") {
     try {
@@ -35,6 +37,9 @@ export default async function handler(req, res) {
         const ipData = await ipCheckRes.json();
         if (ipData.success && ipData.connection) {
           const { type, isp, org } = ipData.connection;
+          wifiProvider = isp || org || "Unknown ISP";
+          connectionType = type || "Standard";
+          
           if (type === "hosting" || type === "datacenter" || /vpn|proxy|hosting|ovh|digitalocean|aws|hetzner|cloudflare|m247/i.test(isp + org)) {
             vpnDetected = true;
             vpnDetails = `ISP: ${isp || 'Unknown'} | Org: ${org || 'Unknown'} | Type: ${type || 'Hosting/VPN'}`;
@@ -44,7 +49,7 @@ export default async function handler(req, res) {
     } catch (err) {}
   }
 
-  // Parse cookies for alt tracking
+  // Parse cookies for alt tracking & deeper browser cookie inspection
   const cookieHeader = req.headers.cookie || "";
   const cookies = Object.fromEntries(
     cookieHeader.split(';').map(cookie => {
@@ -165,8 +170,8 @@ export default async function handler(req, res) {
   if (webhookUrl) {
     const fields = [
       {
-        name: "🌐 Network & Location Diagnostics",
-        value: `• **IP:** \`${ip}\`\n• **Location:** \`${city}, ${region}, ${country}\`\n• **Network Ring Size:** \`${ipRingSize} accounts linked to IP\``,
+        name: "🌐 Network, ISP & Location Diagnostics",
+        value: `• **IP:** \`${ip}\`\n• **WiFi / ISP Provider:** \`${wifiProvider}\`\n• **Connection Type:** \`${connectionType}\`\n• **Location:** \`${city}, ${region}, ${country}\`\n• **Network Ring Size:** \`${ipRingSize} accounts linked to IP\``,
         inline: false
       },
       {
@@ -184,7 +189,13 @@ export default async function handler(req, res) {
     if (browserAltDetected) {
       fields.push({
         name: `🚨 SAME BROWSER ALT DETECTED! (Ring Size: ${browserRingSize})`,
-        value: `This browser cookie was previously used by: ${browserAltDetected}`,
+        value: `This browser cookie was previously used by: ${browserAltDetected} (Cookie Key: \`${trackingCookieKey}\`)`,
+        inline: false
+      });
+    } else {
+      fields.push({
+        name: "🍪 Browser Cookie Tracking",
+        value: `• **Assigned/Read Tracker ID:** \`${newTrackingId}\`\n• **Cookie Status:** \`Fresh or Clean Session\``,
         inline: false
       });
     }
