@@ -1,15 +1,8 @@
 import { Redis } from '@upstash/redis';
-import { Ratelimit } from '@upstash/ratelimit';
 
 const redis = Redis.fromEnv();
 
-// Create a rate limiter: allows 5 requests per 10 seconds per IP
-const ratelimit = new Ratelimit({
-  redis: redis,
-  limiter: Ratelimit.slidingWindow(5, "10 s"),
-});
-
-// Helper for timeouts on fetch requests
+// Helper for timeouts on fetch requests so your API doesn't hang
 const fetchWithTimeout = async (url, options = {}, timeout = 3000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -31,17 +24,7 @@ export default async function handler(req, res) {
   }
 
   // 1. Extract Advanced Telemetry
-  // Vercel populates x-real-ip automatically. x-forwarded-for can be spoofed by clients.
-  const ip = req.headers["x-real-ip"] || req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "Unknown IP";
-  
-  // Rate Limit Check
-  if (ip !== "Unknown IP") {
-    const { success } = await ratelimit.limit(ip);
-    if (!success) {
-      return res.status(429).send("Too many requests.");
-    }
-  }
-
+  const ip = req.headers["x-real-ip"] || req.headers["x-forwarded-for"]?.split(",")[0] || req.socket?.remoteAddress || "Unknown IP";
   const country = req.headers["x-vercel-ip-country"] || "Unknown Country";
   const region = req.headers["x-vercel-ip-country-region"] || "Unknown Region";
   const city = decodeURIComponent(req.headers["x-vercel-ip-city"] || "Unknown City");
@@ -105,11 +88,10 @@ export default async function handler(req, res) {
         browserAltDetected = otherBrowserAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
       }
     }
-    // Update Redis via Pipeline for efficiency
-    const pipeline = redis.pipeline();
-    pipeline.sadd(browserRedisKey, user_id);
-    pipeline.expire(browserRedisKey, 60 * 60 * 24 * 90);
-    await pipeline.exec();
+    
+    // Fallback standard Redis commands (no pipeline to ensure max compatibility)
+    await redis.sadd(browserRedisKey, user_id);
+    await redis.expire(browserRedisKey, 60 * 60 * 24 * 90);
   } catch (err) {
     console.error("[Redis Error] Browser tracking failed:", err.message);
   }
@@ -128,10 +110,9 @@ export default async function handler(req, res) {
           ipAltWarning = otherIpAlts.map(id => `<@${id}> (\`${id}\`)`).join(", ");
         }
       }
-      const pipeline = redis.pipeline();
-      pipeline.sadd(ipRedisKey, user_id);
-      pipeline.expire(ipRedisKey, 60 * 60 * 24 * 30);
-      await pipeline.exec();
+      
+      await redis.sadd(ipRedisKey, user_id);
+      await redis.expire(ipRedisKey, 60 * 60 * 24 * 30);
     } catch (err) {
       console.error("[Redis Error] IP tracking failed:", err.message);
     }
@@ -165,7 +146,6 @@ export default async function handler(req, res) {
           ? `🚨 **High Risk Alt Indicator:** Account is only **${accountAgeDays} days old**`
           : `✅ Account age normal (**${accountAgeDays} days old**).`;
 
-        // Simplified flag checking
         const flags = userData.public_flags || 0;
         const flagMap = {
           1: "Staff", 2: "Partner", 4: "HypeSquad Events", 8: "Bug Hunter Level 1",
