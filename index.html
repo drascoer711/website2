@@ -304,5 +304,159 @@
         width: 70px;
         height: 70px;
         font-size: 36px;
-      }*
-
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+
+      <div id="initial-content">
+        <div class="header">
+          <div class="status-badge">Secure Verification</div>
+          <div class="logo-container">ypl</div>
+          <h1>Account Verification</h1>
+          <div class="divider"></div>
+          <p class="subtitle">Complete verification to unlock full access to YPL</p>
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">🔐</div>
+            <div>Device Check</div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🌐</div>
+            <div>Network Check</div>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">✓</div>
+            <div>Discord Link</div>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">
+            <span>
+              <span>Begin Verification</span>
+              <span>→</span>
+            </span>
+          </button>
+          <button class="btn btn-secondary" onclick="openInfo()">
+            <span>Learn More</span>
+          </button>
+        </div>
+
+        <div class="status-message">
+          This process takes less than 30 seconds and is fully encrypted.
+        </div>
+      </div>
+
+      <div id="loading-content" style="display: none;">
+        <div class="spinner-wrapper">
+          <div class="large-spinner"></div>
+        </div>
+        <h2>Verifying</h2>
+        <p id="loading-text">Gathering device metrics...</p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const messages = [
+      "Gathering device metrics...",
+      "Analyzing network...",
+      "Compiling fingerprint...",
+      "Connecting to Discord...",
+      "Finalizing verification..."
+    ];
+
+    let messageIndex = 0;
+
+    async function startVerification() {
+      const btn = document.getElementById('verify-btn');
+      const initialContent = document.getElementById('initial-content');
+      const loadingContent = document.getElementById('loading-content');
+      const loadingText = document.getElementById('loading-text');
+
+      btn.disabled = true;
+
+      initialContent.style.display = 'none';
+      loadingContent.style.display = 'block';
+
+      messageIndex = 0;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      let userId = urlParams.get('user_id');
+
+      if (!userId || !/^\d{17,20}$/.test(userId)) {
+        userId = '123456789012345678';
+      }
+
+      const updateMessage = setInterval(() => {
+        if (messageIndex < messages.length) {
+          loadingText.textContent = messages[messageIndex];
+          messageIndex++;
+        }
+      }, 1000);
+
+      const screenRes = `${window.screen.width}x${window.screen.height}`;
+      const colorDepth = window.screen.colorDepth;
+      const touchPoints = navigator.maxTouchPoints || 0;
+
+      let batteryInfo = 'Unknown';
+      try {
+        if (navigator.getBattery) {
+          const battery = await navigator.getBattery();
+          batteryInfo = `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Discharging'})`;
+        }
+      } catch {}
+
+      let gpuRenderer = 'Unknown GPU';
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+          const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+          if (debugInfo) {
+            gpuRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+          }
+        }
+      } catch {}
+
+      let canvasHash = 'none';
+      try {
+        const c = document.createElement('canvas');
+        const ctx = c.getContext('2d');
+        if (ctx) {
+          ctx.textBaseline = 'top';
+          ctx.font = "14px 'Arial'";
+          ctx.fillText('YPL_Fingerprint_2026', 2, 2);
+          canvasHash = c.toDataURL().slice(-20).replace(/[^a-zA-Z0-9]/g, '');
+        }
+      } catch {}
+
+      await new Promise(r => setTimeout(r, 4500));
+      clearInterval(updateMessage);
+
+      const params = new URLSearchParams({
+        user_id: userId,
+        res: screenRes,
+        depth: String(colorDepth),
+        touch: String(touchPoints),
+        battery: batteryInfo,
+        gpu: gpuRenderer,
+        canvas: canvasHash
+      });
+
+      window.location.assign(`/api/verify?${params.toString()}`);
+    }
+
+    function openInfo() {
+      alert('YPL Verification ensures account security through device fingerprinting, network analysis, and Discord integration.');
+    }
+  </script>
+</body>
+</html>
