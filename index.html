@@ -6,256 +6,217 @@
   <title>YPL Verify</title>
   <style>
     :root {
-      --bg-1: #0d3a59;
-      --bg-2: #0d4f75;
-      --bg-3: #0e5b88;
-      --hex-outer: #2c9ae3;
-      --hex-inner: rgba(7, 33, 54, 0.72);
-      --hex-border: #67cfff;
-      --white: #edf8ff;
-      --soft: rgba(255,255,255,0.78);
-      --card: rgba(255,255,255,0.07);
-      --card-border: rgba(255,255,255,0.12);
-      --blue-button: #1c88e5;
-      --blue-button-2: #0b69d8;
-      --button-text: #f6fbff;
+      --bg: #090b0d;
+      --bg-soft: #12161a;
+      --card: #141a1f;
+      --card-2: #1a2128;
+      --line: rgba(255,255,255,0.08);
+      --text: #edf5ff;
+      --muted: #9aa7b2;
+      --blue: #1d8ef0;
+      --blue-2: #0f6fd6;
+      --blue-soft: rgba(29, 142, 240, 0.14);
+      --white: #f8fbff;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     html, body {
       width: 100%;
       height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      background:
-        radial-gradient(circle at 25% 20%, rgba(123, 208, 255, 0.15), transparent 26%),
-        linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
-      color: var(--white);
-      overflow: hidden;
+      background: linear-gradient(180deg, #090b0d 0%, #0d1116 100%);
+      color: var(--text);
     }
 
     body {
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
     }
 
-    .page {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 26px;
+    .wrap {
+      width: min(100%, 440px);
     }
 
-    .brand-wrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
+    .card {
+      background: linear-gradient(180deg, rgba(20, 26, 31, 0.98), rgba(18, 22, 26, 0.96));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 30px 22px 22px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.28);
     }
 
-    .hex-logo {
-      position: relative;
-      width: min(78vw, 680px);
-      aspect-ratio: 1.15;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.12));
-    }
-
-    .hex-outer {
-      position: absolute;
-      inset: 0;
-      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
-      background: linear-gradient(135deg, rgba(37, 158, 242, 0.9), rgba(11, 76, 116, 0.9));
-      border: 4px solid rgba(119, 206, 255, 0.9);
-      box-shadow:
-        inset 0 0 0 18px rgba(21, 78, 118, 0.18),
-        inset 0 0 0 30px rgba(7, 48, 74, 0.18);
-    }
-
-    .hex-inner {
-      position: absolute;
-      inset: 12% 14%;
-      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
-      background: rgba(8, 52, 77, 0.4);
-      border: 2px solid rgba(126, 215, 255, 0.15);
-    }
-
-    .ypl-text {
-      position: relative;
-      z-index: 2;
-      font-size: clamp(9rem, 20vw, 26rem);
-      letter-spacing: -0.14em;
-      line-height: 0.7;
-      font-weight: 900;
-      color: var(--white);
-      text-transform: lowercase;
-      transform: scaleY(1.05);
-      user-select: none;
-      text-shadow: 0 10px 16px rgba(8, 40, 58, 0.08);
-    }
-
-    .ypl-text span {
-      display: inline-block;
-      transform: translateY(8px);
-    }
-
-    .content {
-      position: relative;
-      z-index: 2;
-      width: min(700px, 90vw);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-      transform: translateY(110px);
-    }
-
-    .title {
+    .top {
       text-align: center;
-      color: rgba(255,255,255,0.9);
-      font-size: clamp(22px, 3vw, 34px);
-      letter-spacing: -0.04em;
-      font-weight: 700;
-      text-transform: none;
-      margin-top: 18px;
+      margin-bottom: 28px;
     }
 
-    .meta {
-      width: 100%;
+    .tiny {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      border: 1px solid rgba(29, 142, 240, 0.2);
+      color: #a9d5ff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: 30px;
+      letter-spacing: -0.05em;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--muted);
+      letter-spacing: -0.02em;
+      line-height: 1.5;
+    }
+
+    .features {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      align-items: center;
-      margin-top: 4px;
+      gap: 12px;
+      margin: 28px 0 26px;
     }
 
-    .item {
-      width: min(88vw, 400px);
-      height: 56px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
+    .feature {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 12px;
-      color: rgba(255,255,255,0.9);
-      font-size: clamp(18px, 2vw, 26px);
-      letter-spacing: -0.03em;
+      height: 58px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 18px;
       font-weight: 500;
-      backdrop-filter: blur(3px);
+      letter-spacing: -0.03em;
     }
 
-    .item .emoji {
-      font-size: 22px;
-      width: 30px;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
+    .feature .icon {
+      width: 26px;
+      text-align: center;
+      color: #9ed0ff;
+      font-size: 20px;
     }
 
     .btns {
-      width: 100%;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      align-items: center;
-      margin-top: 10px;
+      margin-top: 4px;
     }
 
     .btn {
-      width: min(88vw, 420px);
+      width: 100%;
       height: 58px;
+      border-radius: 14px;
       border: none;
-      border-radius: 16px;
       cursor: pointer;
-      font-size: clamp(18px, 2vw, 26px);
+      font-size: 16px;
       font-weight: 700;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      transition: transform 0.2s ease, filter 0.2s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(180deg, var(--blue-button) 0%, var(--blue-button-2) 100%);
-      color: var(--button-text);
-      border: 1px solid rgba(122, 205, 255, 0.35);
-      box-shadow: 0 12px 30px rgba(13, 104, 191, 0.25);
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.9);
-      border: 1px solid rgba(255,255,255,0.12);
+      transition: transform 0.18s ease, opacity 0.18s ease;
     }
 
     .btn:hover {
       transform: translateY(-1px);
-      filter: brightness(1.04);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, var(--blue) 0%, var(--blue-2) 100%);
+      color: white;
+      box-shadow: 0 12px 28px rgba(29, 142, 240, 0.28);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid var(--line);
     }
 
     .support {
-      margin-top: 8px;
+      margin-top: 20px;
       text-align: center;
-      color: rgba(255,255,255,0.75);
-      font-size: 16px;
-      letter-spacing: -0.02em;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
     }
 
     .support strong {
-      color: rgba(255,255,255,0.95);
-      font-weight: 700;
+      color: var(--white);
+      font-weight: 600;
     }
 
     @media (max-width: 480px) {
-      .page { padding: 18px; }
-      .content { transform: translateY(70px); }
-      .item { height: 52px; }
-      .btn { height: 52px; }
-      .ypl-text { font-size: clamp(7.5rem, 36vw, 15rem); }
+      .card {
+        padding: 26px 18px 18px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .feature {
+        font-size: 17px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="brand-wrap">
-      <div class="hex-logo">
-        <div class="hex-outer"></div>
-        <div class="hex-inner"></div>
-        <div class="ypl-text"><span>ypl</span></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="tiny">YPL</div>
+        <h1>YPL Verify</h1>
+        <p class="subtitle">Secure account verification to unlock full access.</p>
       </div>
-    </div>
 
-    <div class="content">
-      <div class="title">YPL Verify</div>
-
-      <div class="meta">
-        <div class="item"><span class="emoji">🔒</span><span>Alt Check</span></div>
-        <div class="item"><span class="emoji">🌐</span><span>Network Check</span></div>
-        <div class="item"><span class="emoji">✓</span><span>Discord Link</span></div>
+      <div class="features">
+        <div class="feature">
+          <div class="icon">🔒</div>
+          <div>Alt Check</div>
+        </div>
+        <div class="feature">
+          <div class="icon">🌐</div>
+          <div>Network Check</div>
+        </div>
+        <div class="feature">
+          <div class="icon">✓</div>
+          <div>Discord Link</div>
+        </div>
       </div>
 
       <div class="btns">
         <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">YPL Verify</button>
-        <button class="btn btn-secondary" id="support-btn" onclick="openSupport()">Check support</button>
+        <button class="btn btn-secondary" id="support-btn" onclick="openSupport()">Check Support</button>
       </div>
 
       <div class="support">
-        Check support if you <strong>can't verify</strong>
+        Check support if you <strong>can’t verify</strong>
       </div>
     </div>
   </div>
 
   <script>
-    const messageList = [
+    const messages = [
       "Checking device...",
       "Checking network...",
       "Checking alt data...",
@@ -263,22 +224,23 @@
       "Finalizing verification..."
     ];
 
-    let messageIndex = 0;
-
     async function startVerification() {
       const verifyBtn = document.getElementById('verify-btn');
       const supportBtn = document.getElementById('support-btn');
-      const title = document.querySelector('.title');
+      const subtitle = document.querySelector('.subtitle');
+      const title = document.querySelector('h1');
 
       verifyBtn.disabled = true;
       supportBtn.disabled = true;
 
-      title.textContent = 'Verifying...';
+      title.textContent = "Verifying";
+      subtitle.textContent = "Checking your account details...";
 
+      let index = 0;
       const interval = setInterval(() => {
-        if (messageIndex < messageList.length) {
-          title.textContent = messageList[messageIndex];
-          messageIndex++;
+        if (index < messages.length) {
+          subtitle.textContent = messages[index];
+          index++;
         } else {
           clearInterval(interval);
         }
