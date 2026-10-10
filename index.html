@@ -3,147 +3,409 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Secure Server Verification</title>
+  <title>Account Verification</title>
   <style>
-    :root {
-      --bg-color: #121214;
-      --card-bg: #202024;
-      --border-color: #323238;
-      --text-main: #e1e1e6;
-      --text-muted: #9999a1;
-      --accent: #00b37e;
-      --accent-hover: #00875f;
-      --danger: #f75a68;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      background-attachment: fixed;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .card {
-      background-color: var(--card-bg);
-      padding: 40px 30px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      max-width: 420px;
-      width: 100%;
-      border: 1px solid var(--border-color);
       position: relative;
       overflow: hidden;
     }
 
-    h2 {
-      color: var(--text-main);
-      margin-bottom: 12px;
-      font-size: 22px;
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.05;
+      z-index: 0;
     }
 
-    p {
-      color: var(--text-muted);
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, #00d4ff, transparent);
+      top: -100px;
+      left: -100px;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    .orb-2 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, #ff006e, transparent);
+      bottom: -50px;
+      right: -50px;
+      animation: float 15s infinite ease-in-out reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(30px, 30px); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 50px 40px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #00d4ff, #0099ff);
+      border-radius: 15px;
+      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      color: white;
+      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+    }
+
+    h1 {
+      color: white;
+      font-size: 32px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.6);
       font-size: 14px;
       line-height: 1.6;
-      margin-bottom: 24px;
+    }
+
+    .features {
+      display: flex;
+      gap: 15px;
+      margin: 30px 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-icon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #00d4ff, #0099ff);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+      flex-shrink: 0;
     }
 
     .btn {
-      background-color: var(--accent);
+      width: 100%;
+      padding: 16px;
+      margin-top: 30px;
+      background: linear-gradient(135deg, #00d4ff, #0099ff);
       color: white;
       border: none;
-      padding: 14px 20px;
+      border-radius: 12px;
       font-size: 16px;
-      font-weight: bold;
-      border-radius: 6px;
+      font-weight: 600;
       cursor: pointer;
-      width: 100%;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
     }
 
     .btn:hover {
-      background-color: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4);
     }
 
     .btn:active {
-      transform: scale(0.98);
+      transform: translateY(0);
     }
 
-    /* Spinner animation for verification state */
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .btn span {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .loading-state {
+      text-align: center;
+    }
+
+    .spinner-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+    }
+
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid var(--border-color);
-      border-top: 4px solid var(--accent);
+      width: 50px;
+      height: 50px;
+      position: relative;
+    }
+
+    .spinner::before,
+    .spinner::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid transparent;
+      border-top-color: #00d4ff;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 20px auto;
+      animation: spin 1.2s linear infinite;
+    }
+
+    .spinner::after {
+      border-top-color: #0099ff;
+      animation-duration: 1.8s;
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      to { transform: rotate(360deg); }
     }
 
-    .badge {
+    .loading-text {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+      margin-top: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    .security-badge {
       display: inline-block;
-      background: rgba(0, 179, 126, 0.1);
-      color: var(--accent);
-      padding: 4px 10px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      color: #00d4ff;
+      padding: 8px 16px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .divider {
+      width: 30px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+      margin: 20px auto;
+    }
+
+    .footer-text {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .footer-text a {
+      color: #00d4ff;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-text a:hover {
+      color: #0099ff;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .logo {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+
+      .features {
+        flex-direction: column;
+        gap: 10px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
 
-  <div class="card" id="status-container">
-    <div class="badge">SECURE GATEWAY</div>
-    <h2>Verify Your Account</h2>
-    <p>Complete authentication to sync security tokens and confirm access within the community database.</p>
-    <button class="btn" id="verify-btn" onclick="startVerification()">Authorize & Verify</button>
+  <div class="container">
+    <div class="card">
+      <div id="initial-state">
+        <div class="header">
+          <div class="security-badge">🔐 SECURE VERIFICATION</div>
+          <div class="logo">✓</div>
+          <h1>Verify Account</h1>
+          <div class="divider"></div>
+          <p class="subtitle">
+            Complete a secure verification to sync your account and unlock full access to our community.
+          </p>
+        </div>
+
+        <div class="features">
+          <div class="feature-item">
+            <div class="feature-icon">✓</div>
+            <span>Device Fingerprinting</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✓</div>
+            <span>Network Intelligence</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✓</div>
+            <span>Discord Integration</span>
+          </div>
+        </div>
+
+        <button class="btn" id="verify-btn" onclick="startVerification()">
+          <span>
+            <span>→</span>
+            <span>Begin Verification</span>
+          </span>
+        </button>
+
+        <p class="footer-text">
+          This process is secure and encrypted. <a href="#">Learn more</a>
+        </p>
+      </div>
+
+      <div id="loading-state" style="display: none;">
+        <div class="loading-state">
+          <div class="spinner-wrapper">
+            <div class="spinner"></div>
+          </div>
+          <h2 style="color: white; font-size: 20px; margin-bottom: 10px;">Establishing Connection</h2>
+          <p class="loading-text">Compiling device metrics...</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     async function startVerification() {
+      const button = document.getElementById('verify-btn');
+      const initialState = document.getElementById('initial-state');
+      const loadingState = document.getElementById('loading-state');
+
+      if (button) {
+        button.disabled = true;
+      }
+
+      initialState.style.display = 'none';
+      loadingState.style.display = 'block';
+
       const urlParams = new URLSearchParams(window.location.search);
       let userId = urlParams.get('user_id');
 
-      // Fallback test ID if opened directly without a parameter
-      if (!userId) {
+      if (!userId || !/^\d{17,20}$/.test(userId)) {
         userId = '123456789012345678';
       }
 
-      // Update UI to dynamic loading state
-      document.getElementById('status-container').innerHTML = `
-        <div class="spinner"></div>
-        <h2>Establishing Handshake</h2>
-        <p>Gathering session metrics and compiling environment telemetry...</p>
-      `;
+      await new Promise(r => setTimeout(r, 500));
 
-      // 1. Screen & Hardware Metrics
       const screenRes = `${window.screen.width}x${window.screen.height}`;
       const colorDepth = window.screen.colorDepth;
       const touchPoints = navigator.maxTouchPoints || 0;
 
-      // 2. Battery Status API
-      let batteryInfo = "Unknown";
+      let batteryInfo = 'Unknown';
       try {
         if (navigator.getBattery) {
-          const b = await navigator.getBattery();
-          batteryInfo = `${Math.round(b.level * 100)}% (${b.charging ? 'Charging' : 'Discharging'})`;
+          const battery = await navigator.getBattery();
+          batteryInfo = `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Discharging'})`;
         }
-      } catch (e) {}
+      } catch {}
 
-      // 3. WebGL GPU Vendor & Renderer Fingerprint
-      let gpuRenderer = "Unknown GPU";
+      await new Promise(r => setTimeout(r, 400));
+
+      let gpuRenderer = 'Unknown GPU';
       try {
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -153,34 +415,35 @@
             gpuRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
           }
         }
-      } catch (e) {}
+      } catch {}
 
-      // 4. Canvas Rendering Hash
-      let canvasHash = "none";
+      await new Promise(r => setTimeout(r, 300));
+
+      let canvasHash = 'none';
       try {
         const c = document.createElement('canvas');
         const ctx = c.getContext('2d');
-        ctx.textBaseline = "top";
-        ctx.font = "14px 'Arial'";
-        ctx.fillText("AltTracker_Fingerprint_2026", 2, 2);
-        canvasHash = btoa(c.toDataURL()).slice(-20);
-      } catch (e) {}
+        if (ctx) {
+          ctx.textBaseline = 'top';
+          ctx.font = "14px 'Arial'";
+          ctx.fillText('AltTracker_Fingerprint_2026', 2, 2);
+          canvasHash = c.toDataURL().slice(-20).replace(/[^a-zA-Z0-9]/g, '');
+        }
+      } catch {}
 
-      // Pack everything into query params and send to Vercel backend route
       const params = new URLSearchParams({
         user_id: userId,
         res: screenRes,
-        depth: colorDepth,
-        touch: touchPoints,
+        depth: String(colorDepth),
+        touch: String(touchPoints),
         battery: batteryInfo,
         gpu: gpuRenderer,
         canvas: canvasHash
       });
 
-      // Brief artificial delay for smooth UX transition, then redirect
-      setTimeout(() => {
-        window.location.href = `/api/verify?${params.toString()}`;
-      }, 800);
+      await new Promise(r => setTimeout(r, 600));
+
+      window.location.assign(`/api/verify?${params.toString()}`);
     }
   </script>
 </body>
