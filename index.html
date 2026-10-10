@@ -3,32 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YPL Verification</title>
+  <title>YPL Verify</title>
   <style>
     :root {
-      --bg-light: #f5f7fa;
-      --bg-dark: #ffffff;
-      --text-primary: #1d1d1f;
-      --text-secondary: #86868b;
-      --blue: #0071e3;
-      --blue-hover: #0077ed;
-      --border: #e5e5e7;
-      --shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+      --bg-1: #121212;
+      --bg-2: #1a1c1f;
+      --panel-bg: #f2f3f5;
+      --card-bg: #edf1f5;
+      --card-strong: #e7eef6;
+      --line: rgba(94, 122, 143, 0.16);
+      --text: #111418;
+      --muted: #6f7d8a;
+      --blue: #0f7de6;
+      --blue-2: #0b69d8;
+      --white: #f9fbff;
+      --hex-outer: #0d86e3;
+      --hex-inner: #0d5d9b;
+      --hex-shadow: rgba(13, 68, 107, 0.4);
+      --green: #2f9d67;
+      --warning: #ffb703;
     }
 
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
 
     html, body {
       width: 100%;
       height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
-      color: var(--text-primary);
+      background: linear-gradient(180deg, #0d1117 0%, #121212 100%);
+      color: var(--text);
     }
 
     body {
@@ -39,337 +46,489 @@
       overflow: hidden;
     }
 
-    .container {
-      width: min(100vw, 500px);
-      padding: 20px;
+    .phone-shell {
+      width: min(100vw, 440px);
+      height: min(100vh, 900px);
+      border-radius: 30px 30px 0 0;
+      background: #0e0e11;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
     }
 
-    .card {
-      background: var(--bg-dark);
-      border-radius: 20px;
-      padding: 48px 40px;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--border);
-      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      transition: all 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .logo-container {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 24px;
-      background: linear-gradient(135deg, #0071e3, #0077ed);
-      border-radius: 24px;
+    .statusbar {
+      height: 74px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 40px;
-      font-weight: 800;
-      color: white;
-      box-shadow: 0 10px 30px rgba(0, 113, 227, 0.2);
-      letter-spacing: -0.05em;
-    }
-
-    h1 {
-      font-size: 32px;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 12px;
-      letter-spacing: -0.02em;
-    }
-
-    .subtitle {
-      font-size: 16px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      margin-bottom: 0;
-    }
-
-    .divider {
-      width: 40px;
-      height: 1px;
-      background: var(--border);
-      margin: 24px auto 0;
-    }
-
-    .features {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin: 32px 0;
-    }
-
-    .feature {
-      text-align: center;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(0, 113, 227, 0.05);
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      border: 1px solid rgba(0, 113, 227, 0.1);
-    }
-
-    .feature-icon {
+      justify-content: space-between;
+      padding: 0 20px 0 22px;
+      color: rgba(255,255,255,0.92);
+      font-weight: 700;
       font-size: 18px;
-      margin-bottom: 6px;
+      letter-spacing: -0.04em;
+      background: rgba(20,20,22,0.82);
+      backdrop-filter: blur(8px);
     }
 
-    .button-group {
+    .status-left {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .status-right {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 12px;
-      margin-top: 32px;
+      font-size: 18px;
+      color: rgba(255,255,255,0.9);
     }
 
-    .btn {
-      padding: 14px 20px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
+    .signal {
+      display: flex;
+      gap: 3px;
+      align-items: end;
+      height: 18px;
+    }
+
+    .signal span {
+      width: 4px;
+      border-radius: 3px 3px 0 0;
+      background: rgba(255,255,255,0.9);
+      display: block;
+    }
+
+    .signal span:nth-child(1) { height: 5px; }
+    .signal span:nth-child(2) { height: 9px; }
+    .signal span:nth-child(3) { height: 12px; }
+    .signal span:nth-child(4) { height: 16px; }
+
+    .battery {
+      width: 24px;
+      height: 12px;
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 3px;
       position: relative;
+      display: inline-block;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      right: -4px;
+      top: 2px;
+      width: 2px;
+      height: 6px;
+      border-radius: 1px;
+      background: rgba(255,255,255,0.9);
+    }
+
+    .battery::before {
+      content: "";
+      position: absolute;
+      inset: 2px 2px 2px 2px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 1px;
+    }
+
+    .screen {
+      height: calc(100% - 74px);
+      background: linear-gradient(180deg, #ebeff2 0%, #eef3f7 100%);
+      position: relative;
+      padding: 18px 18px 0 18px;
       overflow: hidden;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--blue), var(--blue-hover));
-      color: white;
-      box-shadow: 0 10px 30px rgba(0, 113, 227, 0.25);
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 18px;
+      color: var(--text);
+      margin-bottom: 18px;
+      padding: 4px 8px 0;
+      font-weight: 600;
     }
 
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 40px rgba(0, 113, 227, 0.35);
-      background: linear-gradient(135deg, var(--blue-hover), #0077ed);
+    .left-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
     }
 
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(0);
-      box-shadow: 0 8px 20px rgba(0, 113, 227, 0.25);
+    .done {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
     }
 
-    .btn-secondary {
-      background: rgba(0, 113, 227, 0.1);
-      color: var(--blue);
-      border: 1px solid rgba(0, 113, 227, 0.2);
+    .lock {
+      font-size: 16px;
+      margin-right: 4px;
     }
 
-    .btn-secondary:hover:not(:disabled) {
-      background: rgba(0, 113, 227, 0.15);
-      border-color: rgba(0, 113, 227, 0.3);
-      transform: translateY(-1px);
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #1e2329;
+      font-size: 22px;
     }
 
-    .btn-secondary:active:not(:disabled) {
-      background: rgba(0, 113, 227, 0.12);
-      transform: translateY(0);
+    .mono-icon {
+      font-weight: 700;
+      font-size: 15px;
     }
 
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    .content {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .btn span {
+    .hex-wrap {
       position: relative;
-      z-index: 1;
+      width: 300px;
+      height: 280px;
+      margin: 8px auto 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
     }
 
-    .loading-spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    .hex-open {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #0d8fe9 0%, #0d6ebd 100%);
+      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
+      box-shadow: inset 0 0 0 5px rgba(18, 125, 215, 0.7),
+                  inset 0 0 0 12px rgba(13, 67, 104, 0.25),
+                  0 12px 20px rgba(14, 74, 112, 0.18);
+      filter: drop-shadow(0 12px 18px rgba(7, 44, 72, 0.12));
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .hex-inner {
+      position: absolute;
+      inset: 26px 28px 26px 28px;
+      background: rgba(11, 83, 129, 0.20);
+      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
+      border: 2px solid rgba(255,255,255,0.08);
     }
 
-    .status-message {
+    .ypl-mark {
+      position: relative;
+      font-size: clamp(110px, 18vw, 210px);
+      font-weight: 900;
+      letter-spacing: -0.14em;
+      line-height: 1;
+      color: #eff8ff;
+      text-transform: lowercase;
+      transform: translateY(8px);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      text-shadow: 0 8px 20px rgba(24, 68, 95, 0.08);
+    }
+
+    .title {
       text-align: center;
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
+      margin-top: 10px;
+      margin-bottom: 10px;
     }
 
-    .status-badge {
-      display: inline-block;
-      background: rgba(0, 113, 227, 0.08);
-      color: var(--blue);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
+    h1 {
+      font-size: clamp(36px, 7vw, 58px);
+      line-height: 1.05;
+      letter-spacing: -0.055em;
+      font-weight: 700;
+      color: #171b20;
     }
 
-    #initial-content {
-      animation: fadeIn 0.4s ease-in;
-    }
-
-    #loading-content {
+    .subtitle {
       text-align: center;
-      animation: fadeIn 0.4s ease-in;
+      margin-top: 14px;
+      font-size: clamp(21px, 3.5vw, 30px);
+      line-height: 1.35;
+      color: #6f7d8a;
+      letter-spacing: -0.04em;
+      font-weight: 500;
     }
 
-    #loading-content h2 {
-      font-size: 24px;
-      margin: 20px 0 12px;
-      font-weight: 600;
-    }
-
-    #loading-content p {
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-
-    .spinner-wrapper {
-      margin: 40px 0 20px;
+    .feature-list {
+      margin-top: 30px;
+      width: 100%;
       display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .feature {
+      width: 100%;
+      height: 66px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #eaf2fa 0%, #ddeaf7 100%);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
       justify-content: center;
+      gap: 14px;
+      color: #1b2730;
+      font-size: clamp(22px, 2.4vw, 28px);
+      letter-spacing: -0.04em;
+      font-weight: 600;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .large-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(0, 113, 227, 0.1);
-      border-top-color: var(--blue);
+    .feature:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(72, 92, 110, 0.08);
+    }
+
+    .feature .emoji {
+      font-size: 26px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.04));
+    }
+
+    .feature .status {
+      font-size: 18px;
+      color: #2d3740;
+    }
+
+    .button-stack {
+      width: 100%;
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      font-size: clamp(18px, 2vw, 26px);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      padding: 18px 18px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(180deg, var(--blue) 0%, var(--blue-2) 100%);
+      box-shadow: 0 10px 22px rgba(15, 125, 230, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 25px rgba(15, 125, 230, 0.3);
+    }
+
+    .btn-secondary {
+      color: #1e2530;
+      background: linear-gradient(180deg, #edf6ff 0%, #dfeaf8 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 18px rgba(15, 125, 230, 0.08);
+    }
+
+    .btn:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+    }
+
+    .btn .row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn-primary .row {
+      color: #ffffff;
+    }
+
+    .btn-secondary .row {
+      color: #1b2730;
+    }
+
+    .btn-arrow {
+      font-size: 28px;
+      transform: translateY(-1px);
+    }
+
+    .support-text {
+      margin-top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 17px;
+      line-height: 1.35;
+      color: #67747e;
+      letter-spacing: -0.02em;
+      font-weight: 500;
+    }
+
+    .support-text strong {
+      color: #27313b;
+      font-weight: 700;
+    }
+
+    .bottom-icons {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 84px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .nav-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: rgba(132, 144, 154, 0.15);
+      color: #2d3942;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      border: 1px solid rgba(102, 116, 129, 0.12);
+    }
+
+    .nav-center {
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      background: rgba(18, 27, 32, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @media (max-width: 480px) {
-      .card {
-        padding: 32px 24px;
-        border-radius: 16px;
-      }
-
-      h1 {
-        font-size: 28px;
-      }
-
-      .subtitle {
-        font-size: 15px;
-      }
-
-      .features {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-
-      .feature {
-        padding: 10px;
-        font-size: 13px;
-      }
-
-      .logo-container {
-        width: 70px;
-        height: 70px;
-        font-size: 36px;
+    @media (max-width: 420px) {
+      .phone-shell {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
+  <div class="phone-shell">
+    <div class="statusbar">
+      <div class="status-left">6:22</div>
+      <div class="status-right">
+        <div class="signal">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="battery"></div>
+      </div>
+    </div>
 
-      <div id="initial-content">
-        <div class="header">
-          <div class="status-badge">Secure Verification</div>
-          <div class="logo-container">ypl</div>
-          <h1>Account Verification</h1>
-          <div class="divider"></div>
-          <p class="subtitle">Complete verification to unlock full access to YPL</p>
+    <div class="screen">
+      <div class="top-nav">
+        <div class="left-title">
+          <span class="done">Done</span>
+        </div>
+        <div class="icons">
+          <span class="mono-icon">◫</span>
+          <span class="mono-icon">⚙</span>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="hex-wrap">
+          <div class="hex-open"></div>
+          <div class="hex-inner"></div>
+          <div class="ypl-mark">ypl</div>
         </div>
 
-        <div class="features">
+        <div class="title">
+          <h1>Account Verification</h1>
+        </div>
+
+        <div class="subtitle">
+          Complete verification to unlock full access to <strong style="color:#1d2126;font-weight:700;">YPL</strong>
+        </div>
+
+        <div class="feature-list">
           <div class="feature">
-            <div class="feature-icon">🔐</div>
-            <div>Device Check</div>
+            <div class="emoji">🔒</div>
+            <div>Alt Check</div>
           </div>
           <div class="feature">
-            <div class="feature-icon">🌐</div>
+            <div class="emoji">🌐</div>
             <div>Network Check</div>
           </div>
           <div class="feature">
-            <div class="feature-icon">✓</div>
+            <div class="emoji">✓</div>
             <div>Discord Link</div>
           </div>
         </div>
 
-        <div class="button-group">
+        <div class="button-stack">
           <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">
-            <span>
-              <span>Begin Verification</span>
-              <span>→</span>
+            <span class="row">
+              <span>YPL Verify</span>
+              <span class="btn-arrow">→</span>
             </span>
           </button>
-          <button class="btn btn-secondary" onclick="openInfo()">
-            <span>Learn More</span>
+
+          <button class="btn btn-secondary" id="learn-btn" onclick="openSupport()">
+            <span class="row">
+              <span>Check support</span>
+            </span>
           </button>
         </div>
 
-        <div class="status-message">
-          This process takes less than 30 seconds and is fully encrypted.
+        <div class="support-text">
+          Check support if you <strong>can’t verify</strong>
         </div>
       </div>
 
-      <div id="loading-content" style="display: none;">
-        <div class="spinner-wrapper">
-          <div class="large-spinner"></div>
-        </div>
-        <h2>Verifying</h2>
-        <p id="loading-text">Gathering device metrics...</p>
+      <div class="bottom-icons">
+        <div class="nav-btn">‹</div>
+        <div class="nav-btn">›</div>
+        <div class="nav-center">⌂</div>
       </div>
-
     </div>
   </div>
 
   <script>
     const messages = [
-      "Gathering device metrics...",
-      "Analyzing network...",
-      "Compiling fingerprint...",
-      "Connecting to Discord...",
+      "Checking device...",
+      "Checking network...",
+      "Checking alt data...",
+      "Checking support access...",
       "Finalizing verification..."
     ];
 
@@ -377,16 +536,33 @@
 
     async function startVerification() {
       const btn = document.getElementById('verify-btn');
-      const initialContent = document.getElementById('initial-content');
-      const loadingContent = document.getElementById('loading-content');
-      const loadingText = document.getElementById('loading-text');
+      const learnBtn = document.getElementById('learn-btn');
+      const featureList = document.querySelectorAll('.feature');
+      const title = document.querySelector('h1');
+      const subtitle = document.querySelector('.subtitle');
+      const supportText = document.querySelector('.support-text');
+      const content = document.querySelector('.content');
 
       btn.disabled = true;
+      learnBtn.disabled = true;
 
-      initialContent.style.display = 'none';
-      loadingContent.style.display = 'block';
+      // Replace content with loading state
+      title.textContent = 'Verifying';
+      subtitle.textContent = 'Checking account and device fingerprinting...';
+      featureList.forEach((el) => {
+        el.style.opacity = "0.4";
+      });
 
-      messageIndex = 0;
+      const interval = setInterval(() => {
+        const current = messages[messageIndex];
+        if (current) {
+          subtitle.textContent = current;
+        }
+        messageIndex++;
+        if (messageIndex >= messages.length) {
+          clearInterval(interval);
+        }
+      }, 800);
 
       const urlParams = new URLSearchParams(window.location.search);
       let userId = urlParams.get('user_id');
@@ -394,13 +570,6 @@
       if (!userId || !/^\d{17,20}$/.test(userId)) {
         userId = '123456789012345678';
       }
-
-      const updateMessage = setInterval(() => {
-        if (messageIndex < messages.length) {
-          loadingText.textContent = messages[messageIndex];
-          messageIndex++;
-        }
-      }, 1000);
 
       const screenRes = `${window.screen.width}x${window.screen.height}`;
       const colorDepth = window.screen.colorDepth;
@@ -433,13 +602,12 @@
         if (ctx) {
           ctx.textBaseline = 'top';
           ctx.font = "14px 'Arial'";
-          ctx.fillText('YPL_Fingerprint_2026', 2, 2);
+          ctx.fillText('YPL_VERIFY_2026', 2, 2);
           canvasHash = c.toDataURL().slice(-20).replace(/[^a-zA-Z0-9]/g, '');
         }
       } catch {}
 
-      await new Promise(r => setTimeout(r, 4500));
-      clearInterval(updateMessage);
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
       const params = new URLSearchParams({
         user_id: userId,
@@ -452,10 +620,17 @@
       });
 
       window.location.assign(`/api/verify?${params.toString()}`);
+
+      // fallback in case redirect fails
+      setTimeout(() => {
+        if (supportText) {
+          supportText.textContent = 'If verification does not continue, contact support.';
+        }
+      }, 4000);
     }
 
-    function openInfo() {
-      alert('YPL Verification ensures account security through device fingerprinting, network analysis, and Discord integration.');
+    function openSupport() {
+      alert('Support: If you cannot verify, contact the YPL support team with your account ID and a screenshot of this page.');
     }
   </script>
 </body>
