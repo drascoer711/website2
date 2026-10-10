@@ -5,37 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YPL Verify</title>
   <style>
-    :root {
-      --bg-1: #121212;
-      --bg-2: #1a1c1f;
-      --panel-bg: #f2f3f5;
-      --card-bg: #edf1f5;
-      --card-strong: #e7eef6;
-      --line: rgba(94, 122, 143, 0.16);
-      --text: #111418;
-      --muted: #6f7d8a;
-      --blue: #0f7de6;
-      --blue-2: #0b69d8;
-      --white: #f9fbff;
-      --hex-outer: #0d86e3;
-      --hex-inner: #0d5d9b;
-      --hex-shadow: rgba(13, 68, 107, 0.4);
-      --green: #2f9d67;
-      --warning: #ffb703;
-    }
-
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     html, body {
       width: 100%;
       height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      background: linear-gradient(180deg, #0d1117 0%, #121212 100%);
-      color: var(--text);
+      background: linear-gradient(135deg, #0f4769 0%, #0a2f45 50%, #062b3e 100%);
+      color: #1d1d1f;
+      overflow-x: hidden;
     }
 
     body {
@@ -43,483 +25,237 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      overflow: hidden;
+      padding: 20px;
     }
 
-    .phone-shell {
-      width: min(100vw, 440px);
-      height: min(100vh, 900px);
-      border-radius: 30px 30px 0 0;
-      background: #0e0e11;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .statusbar {
-      height: 74px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px 0 22px;
-      color: rgba(255,255,255,0.92);
-      font-weight: 700;
-      font-size: 18px;
-      letter-spacing: -0.04em;
-      background: rgba(20,20,22,0.82);
-      backdrop-filter: blur(8px);
-    }
-
-    .status-left {
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .status-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 18px;
-      color: rgba(255,255,255,0.9);
-    }
-
-    .signal {
-      display: flex;
-      gap: 3px;
-      align-items: end;
-      height: 18px;
-    }
-
-    .signal span {
-      width: 4px;
-      border-radius: 3px 3px 0 0;
-      background: rgba(255,255,255,0.9);
-      display: block;
-    }
-
-    .signal span:nth-child(1) { height: 5px; }
-    .signal span:nth-child(2) { height: 9px; }
-    .signal span:nth-child(3) { height: 12px; }
-    .signal span:nth-child(4) { height: 16px; }
-
-    .battery {
-      width: 24px;
-      height: 12px;
-      border: 2px solid rgba(255,255,255,0.9);
-      border-radius: 3px;
-      position: relative;
-      display: inline-block;
-    }
-
-    .battery::after {
-      content: "";
-      position: absolute;
-      right: -4px;
-      top: 2px;
-      width: 2px;
-      height: 6px;
-      border-radius: 1px;
-      background: rgba(255,255,255,0.9);
-    }
-
-    .battery::before {
-      content: "";
-      position: absolute;
-      inset: 2px 2px 2px 2px;
-      background: rgba(255,255,255,0.9);
-      border-radius: 1px;
-    }
-
-    .screen {
-      height: calc(100% - 74px);
-      background: linear-gradient(180deg, #ebeff2 0%, #eef3f7 100%);
-      position: relative;
-      padding: 18px 18px 0 18px;
-      overflow: hidden;
-    }
-
-    .top-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 18px;
-      color: var(--text);
-      margin-bottom: 18px;
-      padding: 4px 8px 0;
-      font-weight: 600;
-    }
-
-    .left-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-    }
-
-    .done {
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-
-    .lock {
-      font-size: 16px;
-      margin-right: 4px;
-    }
-
-    .icons {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      color: #1e2329;
-      font-size: 22px;
-    }
-
-    .mono-icon {
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    .content {
+    .container {
       width: 100%;
-      max-width: 360px;
-      margin: 0 auto;
-      padding-top: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      max-width: 500px;
+      padding: 40px 20px;
+      animation: fadeIn 0.6s ease-in;
     }
 
-    .hex-wrap {
-      position: relative;
-      width: 300px;
-      height: 280px;
-      margin: 8px auto 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .hex-open {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, #0d8fe9 0%, #0d6ebd 100%);
-      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
-      box-shadow: inset 0 0 0 5px rgba(18, 125, 215, 0.7),
-                  inset 0 0 0 12px rgba(13, 67, 104, 0.25),
-                  0 12px 20px rgba(14, 74, 112, 0.18);
-      filter: drop-shadow(0 12px 18px rgba(7, 44, 72, 0.12));
-    }
-
-    .hex-inner {
-      position: absolute;
-      inset: 26px 28px 26px 28px;
-      background: rgba(11, 83, 129, 0.20);
-      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
-      border: 2px solid rgba(255,255,255,0.08);
-    }
-
-    .ypl-mark {
-      position: relative;
-      font-size: clamp(110px, 18vw, 210px);
-      font-weight: 900;
-      letter-spacing: -0.14em;
-      line-height: 1;
-      color: #eff8ff;
-      text-transform: lowercase;
-      transform: translateY(8px);
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      text-shadow: 0 8px 20px rgba(24, 68, 95, 0.08);
-    }
-
-    .title {
+    .logo-section {
       text-align: center;
-      margin-top: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 40px;
+    }
+
+    .hex-logo {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 30px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%230d7bc1;stop-opacity:1" /><stop offset="100%" style="stop-color:%230b5a9d;stop-opacity:1" /></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/></filter></defs><g filter="url(%23shadow)"><polygon points="100,20 170,50 170,150 100,180 30,150 30,50" fill="url(%23hexGrad)" stroke="%2362d2ff" stroke-width="3"/><polygon points="100,40 155,65 155,135 100,160 45,135 45,65" fill="none" stroke="%231a4d6d" stroke-width="2" opacity="0.4"/></g><g><path d="M 80 70 L 70 70 L 70 120 L 80 130 L 90 130 L 90 80 Q 90 70 80 70" fill="%23edf8ff" opacity="0.95"/><path d="M 110 70 L 130 70 L 130 130 L 120 130 L 110 120 L 110 70" fill="%23edf8ff" opacity="0.95"/></g></svg>') center / contain no-repeat;
+      opacity: 0.95;
+      filter: drop-shadow(0 10px 30px rgba(0, 113, 227, 0.25));
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
     }
 
     h1 {
-      font-size: clamp(36px, 7vw, 58px);
-      line-height: 1.05;
-      letter-spacing: -0.055em;
+      font-size: 42px;
       font-weight: 700;
-      color: #171b20;
+      color: #ffffff;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
     }
 
     .subtitle {
-      text-align: center;
-      margin-top: 14px;
-      font-size: clamp(21px, 3.5vw, 30px);
-      line-height: 1.35;
-      color: #6f7d8a;
-      letter-spacing: -0.04em;
-      font-weight: 500;
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.4;
+      letter-spacing: -0.01em;
     }
 
-    .feature-list {
-      margin-top: 30px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 32px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 16px;
+      margin-bottom: 28px;
     }
 
     .feature {
-      width: 100%;
-      height: 66px;
-      border-radius: 18px;
-      background: linear-gradient(180deg, #eaf2fa 0%, #ddeaf7 100%);
-      border: 1px solid var(--line);
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 14px;
-      color: #1b2730;
-      font-size: clamp(22px, 2.4vw, 28px);
-      letter-spacing: -0.04em;
-      font-weight: 600;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      gap: 16px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      transition: all 0.2s ease;
     }
 
     .feature:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 18px rgba(72, 92, 110, 0.08);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
     }
 
-    .feature .emoji {
-      font-size: 26px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.04));
+    .feature-icon {
+      font-size: 24px;
+      min-width: 32px;
     }
 
-    .feature .status {
-      font-size: 18px;
-      color: #2d3740;
+    .feature-text {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
     }
 
-    .button-stack {
-      width: 100%;
-      margin-top: 28px;
+    .button-group {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
     .btn {
-      width: 100%;
+      padding: 16px 20px;
       border: none;
-      border-radius: 18px;
-      font-size: clamp(18px, 2vw, 26px);
-      font-weight: 800;
-      letter-spacing: 0.03em;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-transform: uppercase;
-      padding: 18px 18px;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.04);
-    }
-
-    .btn-primary {
-      color: white;
-      background: linear-gradient(180deg, var(--blue) 0%, var(--blue-2) 100%);
-      box-shadow: 0 10px 22px rgba(15, 125, 230, 0.25);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 25px rgba(15, 125, 230, 0.3);
-    }
-
-    .btn-secondary {
-      color: #1e2530;
-      background: linear-gradient(180deg, #edf6ff 0%, #dfeaf8 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 18px rgba(15, 125, 230, 0.08);
-    }
-
-    .btn:disabled {
-      opacity: 0.75;
-      cursor: not-allowed;
-    }
-
-    .btn .row {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      position: relative;
-      z-index: 2;
     }
 
-    .btn-primary .row {
-      color: #ffffff;
+    .btn-primary {
+      background: linear-gradient(135deg, #0071e3 0%, #0077ed 100%);
+      color: white;
+      box-shadow: 0 12px 30px rgba(0, 113, 227, 0.3);
     }
 
-    .btn-secondary .row {
-      color: #1b2730;
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(0, 113, 227, 0.4);
     }
 
-    .btn-arrow {
-      font-size: 28px;
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
       transform: translateY(-1px);
     }
 
-    .support-text {
-      margin-top: 20px;
-      width: 100%;
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .support-link {
       text-align: center;
-      font-size: 17px;
-      line-height: 1.35;
-      color: #67747e;
-      letter-spacing: -0.02em;
-      font-weight: 500;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 14px;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
     }
 
-    .support-text strong {
-      color: #27313b;
-      font-weight: 700;
+    .support-link strong {
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
     }
 
-    .bottom-icons {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 84px;
-      border-top: 1px solid rgba(0,0,0,0.08);
-      background: rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 16px;
+      }
 
-    .nav-btn {
-      width: 46px;
-      height: 46px;
-      border-radius: 12px;
-      background: rgba(132, 144, 154, 0.15);
-      color: #2d3942;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 700;
-      border: 1px solid rgba(102, 116, 129, 0.12);
-    }
+      .hex-logo {
+        width: 110px;
+        height: 110px;
+      }
 
-    .nav-center {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: rgba(18, 27, 32, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 16px;
-      font-weight: 700;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
-    }
+      h1 {
+        font-size: 32px;
+      }
 
-    @media (max-width: 420px) {
-      .phone-shell {
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
+      .subtitle {
+        font-size: 16px;
+      }
+
+      .card {
+        padding: 24px 16px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="phone-shell">
-    <div class="statusbar">
-      <div class="status-left">6:22</div>
-      <div class="status-right">
-        <div class="signal">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
+  <div class="container">
+    <div class="logo-section">
+      <div class="hex-logo"></div>
+    </div>
+
+    <div class="header">
+      <h1>YPL Verify</h1>
+      <p class="subtitle">Secure account verification to unlock full access</p>
+    </div>
+
+    <div class="card">
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-text">Alt Check</div>
         </div>
-        <div class="battery"></div>
+        <div class="feature">
+          <div class="feature-icon">🌐</div>
+          <div class="feature-text">Network Check</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <div class="feature-text">Discord Link</div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">
+          <span>Begin Verification</span>
+          <span>→</span>
+        </button>
+
+        <button class="btn btn-secondary" id="support-btn" onclick="openSupport()">
+          <span>Check support</span>
+        </button>
       </div>
     </div>
 
-    <div class="screen">
-      <div class="top-nav">
-        <div class="left-title">
-          <span class="done">Done</span>
-        </div>
-        <div class="icons">
-          <span class="mono-icon">◫</span>
-          <span class="mono-icon">⚙</span>
-        </div>
-      </div>
-
-      <div class="content">
-        <div class="hex-wrap">
-          <div class="hex-open"></div>
-          <div class="hex-inner"></div>
-          <div class="ypl-mark">ypl</div>
-        </div>
-
-        <div class="title">
-          <h1>Account Verification</h1>
-        </div>
-
-        <div class="subtitle">
-          Complete verification to unlock full access to <strong style="color:#1d2126;font-weight:700;">YPL</strong>
-        </div>
-
-        <div class="feature-list">
-          <div class="feature">
-            <div class="emoji">🔒</div>
-            <div>Alt Check</div>
-          </div>
-          <div class="feature">
-            <div class="emoji">🌐</div>
-            <div>Network Check</div>
-          </div>
-          <div class="feature">
-            <div class="emoji">✓</div>
-            <div>Discord Link</div>
-          </div>
-        </div>
-
-        <div class="button-stack">
-          <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">
-            <span class="row">
-              <span>YPL Verify</span>
-              <span class="btn-arrow">→</span>
-            </span>
-          </button>
-
-          <button class="btn btn-secondary" id="learn-btn" onclick="openSupport()">
-            <span class="row">
-              <span>Check support</span>
-            </span>
-          </button>
-        </div>
-
-        <div class="support-text">
-          Check support if you <strong>can’t verify</strong>
-        </div>
-      </div>
-
-      <div class="bottom-icons">
-        <div class="nav-btn">‹</div>
-        <div class="nav-btn">›</div>
-        <div class="nav-center">⌂</div>
-      </div>
+    <div class="support-link">
+      Check support if you <strong>can't verify</strong>
     </div>
   </div>
 
@@ -528,7 +264,7 @@
       "Checking device...",
       "Checking network...",
       "Checking alt data...",
-      "Checking support access...",
+      "Verifying account...",
       "Finalizing verification..."
     ];
 
@@ -536,33 +272,23 @@
 
     async function startVerification() {
       const btn = document.getElementById('verify-btn');
-      const learnBtn = document.getElementById('learn-btn');
-      const featureList = document.querySelectorAll('.feature');
-      const title = document.querySelector('h1');
+      const supportBtn = document.getElementById('support-btn');
       const subtitle = document.querySelector('.subtitle');
-      const supportText = document.querySelector('.support-text');
-      const content = document.querySelector('.content');
+      const originalSubtitle = subtitle.textContent;
 
       btn.disabled = true;
-      learnBtn.disabled = true;
+      supportBtn.disabled = true;
 
-      // Replace content with loading state
-      title.textContent = 'Verifying';
-      subtitle.textContent = 'Checking account and device fingerprinting...';
-      featureList.forEach((el) => {
-        el.style.opacity = "0.4";
-      });
+      messageIndex = 0;
 
       const interval = setInterval(() => {
-        const current = messages[messageIndex];
-        if (current) {
-          subtitle.textContent = current;
-        }
-        messageIndex++;
-        if (messageIndex >= messages.length) {
+        if (messageIndex < messages.length) {
+          subtitle.textContent = messages[messageIndex];
+          messageIndex++;
+        } else {
           clearInterval(interval);
         }
-      }, 800);
+      }, 700);
 
       const urlParams = new URLSearchParams(window.location.search);
       let userId = urlParams.get('user_id');
@@ -607,7 +333,7 @@
         }
       } catch {}
 
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 3500));
 
       const params = new URLSearchParams({
         user_id: userId,
@@ -620,13 +346,6 @@
       });
 
       window.location.assign(`/api/verify?${params.toString()}`);
-
-      // fallback in case redirect fails
-      setTimeout(() => {
-        if (supportText) {
-          supportText.textContent = 'If verification does not continue, contact support.';
-        }
-      }, 4000);
     }
 
     function openSupport() {
