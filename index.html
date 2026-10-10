@@ -1,81 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account Verification</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YPL Verification</title>
   <style>
+    :root {
+      --bg-light: #f5f7fa;
+      --bg-dark: #ffffff;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --blue: #0071e3;
+      --blue-hover: #0077ed;
+      --border: #e5e5e7;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+      color: var(--text-primary);
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      background-attachment: fixed;
-      min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      position: relative;
+      justify-content: center;
+      min-height: 100vh;
       overflow: hidden;
     }
 
-    /* Animated background elements */
-    .bg-orb {
-      position: fixed;
-      border-radius: 50%;
-      opacity: 0.05;
-      z-index: 0;
-    }
-
-    .orb-1 {
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, #00d4ff, transparent);
-      top: -100px;
-      left: -100px;
-      animation: float 20s infinite ease-in-out;
-    }
-
-    .orb-2 {
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, #ff006e, transparent);
-      bottom: -50px;
-      right: -50px;
-      animation: float 15s infinite ease-in-out reverse;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(30px, 30px); }
-    }
-
     .container {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 500px;
+      width: min(100vw, 500px);
       padding: 20px;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-dark);
       border-radius: 20px;
-      padding: 50px 40px;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-      animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 48px 40px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s ease;
     }
 
-    @keyframes slideUp {
+    @keyframes slideIn {
       from {
         opacity: 0;
-        transform: translateY(40px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
@@ -88,107 +70,125 @@
       margin-bottom: 40px;
     }
 
-    .logo {
-      display: inline-flex;
+    .logo-container {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, #0071e3, #0077ed);
+      border-radius: 24px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #00d4ff, #0099ff);
-      border-radius: 15px;
-      margin-bottom: 20px;
-      font-size: 28px;
-      font-weight: bold;
+      font-size: 40px;
+      font-weight: 800;
       color: white;
-      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 113, 227, 0.2);
+      letter-spacing: -0.05em;
     }
 
     h1 {
-      color: white;
       font-size: 32px;
-      margin-bottom: 10px;
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
     }
 
     .subtitle {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 0;
+    }
+
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--border);
+      margin: 24px auto 0;
     }
 
     .features {
-      display: flex;
-      gap: 15px;
-      margin: 30px 0;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.7);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 32px 0;
     }
 
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .feature {
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(0, 113, 227, 0.05);
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(0, 113, 227, 0.1);
     }
 
     .feature-icon {
-      width: 20px;
-      height: 20px;
-      background: linear-gradient(135deg, #00d4ff, #0099ff);
-      border-radius: 4px;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .button-group {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: white;
-      flex-shrink: 0;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 32px;
     }
 
     .btn {
-      width: 100%;
-      padding: 16px;
-      margin-top: 30px;
-      background: linear-gradient(135deg, #00d4ff, #0099ff);
-      color: white;
+      padding: 14px 20px;
       border: none;
       border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+      transition: all 0.2s ease;
+      text-transform: uppercase;
       position: relative;
       overflow: hidden;
     }
 
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--blue-hover));
+      color: white;
+      box-shadow: 0 10px 30px rgba(0, 113, 227, 0.25);
     }
 
-    .btn:hover::before {
-      width: 300px;
-      height: 300px;
-    }
-
-    .btn:hover {
+    .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4);
+      box-shadow: 0 15px 40px rgba(0, 113, 227, 0.35);
+      background: linear-gradient(135deg, var(--blue-hover), #0077ed);
     }
 
-    .btn:active {
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 8px 20px rgba(0, 113, 227, 0.25);
+    }
+
+    .btn-secondary {
+      background: rgba(0, 113, 227, 0.1);
+      color: var(--blue);
+      border: 1px solid rgba(0, 113, 227, 0.2);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(0, 113, 227, 0.15);
+      border-color: rgba(0, 113, 227, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary:active:not(:disabled) {
+      background: rgba(0, 113, 227, 0.12);
       transform: translateY(0);
     }
 
     .btn:disabled {
-      opacity: 0.7;
+      opacity: 0.6;
       cursor: not-allowed;
     }
 
@@ -201,67 +201,74 @@
       gap: 8px;
     }
 
-    /* Loading state */
-    .loading-state {
-      text-align: center;
-    }
-
-    .spinner-wrapper {
-      display: flex;
-      justify-content: center;
-      margin: 30px 0;
-    }
-
-    .spinner {
-      width: 50px;
-      height: 50px;
-      position: relative;
-    }
-
-    .spinner::before,
-    .spinner::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border: 3px solid transparent;
-      border-top-color: #00d4ff;
+    .loading-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
       border-radius: 50%;
-      animation: spin 1.2s linear infinite;
-    }
-
-    .spinner::after {
-      border-top-color: #0099ff;
-      animation-duration: 1.8s;
+      animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    .loading-text {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 16px;
+    .status-message {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
       margin-top: 20px;
-      animation: pulse 2s ease-in-out infinite;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
-    }
-
-    .security-badge {
+    .status-badge {
       display: inline-block;
-      background: rgba(0, 212, 255, 0.1);
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      color: #00d4ff;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 12px;
+      background: rgba(0, 113, 227, 0.08);
+      color: var(--blue);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
       font-weight: 600;
-      margin-bottom: 20px;
-      animation: fadeIn 0.6s ease-in-out;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    #initial-content {
+      animation: fadeIn 0.4s ease-in;
+    }
+
+    #loading-content {
+      text-align: center;
+      animation: fadeIn 0.4s ease-in;
+    }
+
+    #loading-content h2 {
+      font-size: 24px;
+      margin: 20px 0 12px;
+      font-weight: 600;
+    }
+
+    #loading-content p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .spinner-wrapper {
+      margin: 40px 0 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .large-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0, 113, 227, 0.1);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
 
     @keyframes fadeIn {
@@ -269,120 +276,120 @@
       to { opacity: 1; }
     }
 
-    .divider {
-      width: 30px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #00d4ff, transparent);
-      margin: 20px auto;
-    }
-
-    .footer-text {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.4);
-      text-align: center;
-      margin-top: 30px;
-    }
-
-    .footer-text a {
-      color: #00d4ff;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-
-    .footer-text a:hover {
-      color: #0099ff;
-    }
-
     @media (max-width: 480px) {
       .card {
-        padding: 30px 20px;
+        padding: 32px 24px;
+        border-radius: 16px;
       }
 
       h1 {
-        font-size: 24px;
+        font-size: 28px;
       }
 
-      .logo {
-        width: 50px;
-        height: 50px;
-        font-size: 24px;
+      .subtitle {
+        font-size: 15px;
       }
 
       .features {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 10px;
+      }
+
+      .feature {
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      .logo-container {
+        width: 70px;
+        height: 70px;
+        font-size: 36px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="bg-orb orb-1"></div>
-  <div class="bg-orb orb-2"></div>
-
   <div class="container">
     <div class="card">
-      <div id="initial-state">
+      
+      <!-- Initial State -->
+      <div id="initial-content">
         <div class="header">
-          <div class="security-badge">🔐 SECURE VERIFICATION</div>
-          <div class="logo">✓</div>
-          <h1>Verify Account</h1>
+          <div class="status-badge">Secure Verification</div>
+          <div class="logo-container">ypl</div>
+          <h1>Account Verification</h1>
           <div class="divider"></div>
-          <p class="subtitle">
-            Complete a secure verification to sync your account and unlock full access to our community.
-          </p>
+          <p class="subtitle">Complete verification to unlock full access to YPL</p>
         </div>
 
         <div class="features">
-          <div class="feature-item">
-            <div class="feature-icon">✓</div>
-            <span>Device Fingerprinting</span>
+          <div class="feature">
+            <div class="feature-icon">🔐</div>
+            <div>Device Check</div>
           </div>
-          <div class="feature-item">
-            <div class="feature-icon">✓</div>
-            <span>Network Intelligence</span>
+          <div class="feature">
+            <div class="feature-icon">🌐</div>
+            <div>Network Check</div>
           </div>
-          <div class="feature-item">
+          <div class="feature">
             <div class="feature-icon">✓</div>
-            <span>Discord Integration</span>
+            <div>Discord Link</div>
           </div>
         </div>
 
-        <button class="btn" id="verify-btn" onclick="startVerification()">
-          <span>
-            <span>→</span>
-            <span>Begin Verification</span>
-          </span>
-        </button>
+        <div class="button-group">
+          <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">
+            <span>
+              <span>Begin Verification</span>
+              <span>→</span>
+            </span>
+          </button>
+          <button class="btn btn-secondary" onclick="openInfo()">
+            <span>Learn More</span>
+          </button>
+        </div>
 
-        <p class="footer-text">
-          This process is secure and encrypted. <a href="#">Learn more</a>
-        </p>
-      </div>
-
-      <div id="loading-state" style="display: none;">
-        <div class="loading-state">
-          <div class="spinner-wrapper">
-            <div class="spinner"></div>
-          </div>
-          <h2 style="color: white; font-size: 20px; margin-bottom: 10px;">Establishing Connection</h2>
-          <p class="loading-text">Compiling device metrics...</p>
+        <div class="status-message">
+          This process takes less than 30 seconds and is fully encrypted.
         </div>
       </div>
+
+      <!-- Loading State -->
+      <div id="loading-content" style="display: none;">
+        <div class="spinner-wrapper">
+          <div class="large-spinner"></div>
+        </div>
+        <h2>Verifying</h2>
+        <p id="loading-text">Gathering device metrics...</p>
+      </div>
+
     </div>
   </div>
 
   <script>
+    const messages = [
+      "Gathering device metrics...",
+      "Analyzing network...",
+      "Compiling fingerprint...",
+      "Connecting to Discord...",
+      "Finalizing verification..."
+    ];
+
+    let messageIndex = 0;
+
     async function startVerification() {
-      const button = document.getElementById('verify-btn');
-      const initialState = document.getElementById('initial-state');
-      const loadingState = document.getElementById('loading-state');
+      const btn = document.getElementById('verify-btn');
+      const initialContent = document.getElementById('initial-content');
+      const loadingContent = document.getElementById('loading-content');
+      const loadingText = document.getElementById('loading-text');
 
-      if (button) {
-        button.disabled = true;
-      }
+      btn.disabled = true;
 
-      initialState.style.display = 'none';
-      loadingState.style.display = 'block';
+      // Hide initial, show loading
+      initialContent.style.display = 'none';
+      loadingContent.style.display = 'block';
+
+      messageIndex = 0;
 
       const urlParams = new URLSearchParams(window.location.search);
       let userId = urlParams.get('user_id');
@@ -391,9 +398,15 @@
         userId = '123456789012345678';
       }
 
-      // Simulate data gathering with realistic delays
-      await new Promise(r => setTimeout(r, 500));
+      // Simulate data collection with message updates
+      const updateMessage = setInterval(() => {
+        if (messageIndex < messages.length) {
+          loadingText.textContent = messages[messageIndex];
+          messageIndex++;
+        }
+      }, 1000);
 
+      // Collect device data
       const screenRes = `${window.screen.width}x${window.screen.height}`;
       const colorDepth = window.screen.colorDepth;
       const touchPoints = navigator.maxTouchPoints || 0;
@@ -405,8 +418,6 @@
           batteryInfo = `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Discharging'})`;
         }
       } catch {}
-
-      await new Promise(r => setTimeout(r, 400));
 
       let gpuRenderer = 'Unknown GPU';
       try {
@@ -420,8 +431,6 @@
         }
       } catch {}
 
-      await new Promise(r => setTimeout(r, 300));
-
       let canvasHash = 'none';
       try {
         const c = document.createElement('canvas');
@@ -429,10 +438,14 @@
         if (ctx) {
           ctx.textBaseline = 'top';
           ctx.font = "14px 'Arial'";
-          ctx.fillText('AltTracker_Fingerprint_2026', 2, 2);
+          ctx.fillText('YPL_Fingerprint_2026', 2, 2);
           canvasHash = c.toDataURL().slice(-20).replace(/[^a-zA-Z0-9]/g, '');
         }
       } catch {}
+
+      // Wait for simulated verification
+      await new Promise(r => setTimeout(r, 4500));
+      clearInterval(updateMessage);
 
       const params = new URLSearchParams({
         user_id: userId,
@@ -444,9 +457,11 @@
         canvas: canvasHash
       });
 
-      await new Promise(r => setTimeout(r, 600));
-
       window.location.assign(`/api/verify?${params.toString()}`);
+    }
+
+    function openInfo() {
+      alert('YPL Verification ensures account security through device fingerprinting, network analysis, and Discord integration.');
     }
   </script>
 </body>
