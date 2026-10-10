@@ -5,262 +5,257 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YPL Verify</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg-1: #0d3a59;
+      --bg-2: #0d4f75;
+      --bg-3: #0e5b88;
+      --hex-outer: #2c9ae3;
+      --hex-inner: rgba(7, 33, 54, 0.72);
+      --hex-border: #67cfff;
+      --white: #edf8ff;
+      --soft: rgba(255,255,255,0.78);
+      --card: rgba(255,255,255,0.07);
+      --card-border: rgba(255,255,255,0.12);
+      --blue-button: #1c88e5;
+      --blue-button-2: #0b69d8;
+      --button-text: #f6fbff;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
       width: 100%;
       height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #0f4769 0%, #0a2f45 50%, #062b3e 100%);
-      color: #1d1d1f;
-      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 25% 20%, rgba(123, 208, 255, 0.15), transparent 26%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+      color: var(--white);
+      overflow: hidden;
     }
 
     body {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
     }
 
-    .container {
+    .page {
+      position: relative;
       width: 100%;
-      max-width: 500px;
-      padding: 40px 20px;
-      animation: fadeIn 0.6s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .logo-section {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .hex-logo {
-      width: 140px;
-      height: 140px;
-      margin: 0 auto 30px;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%230d7bc1;stop-opacity:1" /><stop offset="100%" style="stop-color:%230b5a9d;stop-opacity:1" /></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/></filter></defs><g filter="url(%23shadow)"><polygon points="100,20 170,50 170,150 100,180 30,150 30,50" fill="url(%23hexGrad)" stroke="%2362d2ff" stroke-width="3"/><polygon points="100,40 155,65 155,135 100,160 45,135 45,65" fill="none" stroke="%231a4d6d" stroke-width="2" opacity="0.4"/></g><g><path d="M 80 70 L 70 70 L 70 120 L 80 130 L 90 130 L 90 80 Q 90 70 80 70" fill="%23edf8ff" opacity="0.95"/><path d="M 110 70 L 130 70 L 130 130 L 120 130 L 110 120 L 110 70" fill="%23edf8ff" opacity="0.95"/></g></svg>') center / contain no-repeat;
-      opacity: 0.95;
-      filter: drop-shadow(0 10px 30px rgba(0, 113, 227, 0.25));
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    h1 {
-      font-size: 42px;
-      font-weight: 700;
-      color: #ffffff;
-      margin-bottom: 12px;
-      letter-spacing: -0.02em;
-    }
-
-    .subtitle {
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.75);
-      line-height: 1.4;
-      letter-spacing: -0.01em;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 24px;
-      padding: 32px 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-
-    .feature {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 14px 16px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      transition: all 0.2s ease;
-    }
-
-    .feature:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-    }
-
-    .feature-icon {
-      font-size: 24px;
-      min-width: 32px;
-    }
-
-    .feature-text {
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 15px;
-      font-weight: 500;
-      letter-spacing: -0.01em;
-    }
-
-    .button-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .btn {
-      padding: 16px 20px;
-      border: none;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      padding: 26px;
+    }
+
+    .brand-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .hex-logo {
+      position: relative;
+      width: min(78vw, 680px);
+      aspect-ratio: 1.15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.12));
+    }
+
+    .hex-outer {
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
+      background: linear-gradient(135deg, rgba(37, 158, 242, 0.9), rgba(11, 76, 116, 0.9));
+      border: 4px solid rgba(119, 206, 255, 0.9);
+      box-shadow:
+        inset 0 0 0 18px rgba(21, 78, 118, 0.18),
+        inset 0 0 0 30px rgba(7, 48, 74, 0.18);
+    }
+
+    .hex-inner {
+      position: absolute;
+      inset: 12% 14%;
+      clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%);
+      background: rgba(8, 52, 77, 0.4);
+      border: 2px solid rgba(126, 215, 255, 0.15);
+    }
+
+    .ypl-text {
+      position: relative;
+      z-index: 2;
+      font-size: clamp(9rem, 20vw, 26rem);
+      letter-spacing: -0.14em;
+      line-height: 0.7;
+      font-weight: 900;
+      color: var(--white);
+      text-transform: lowercase;
+      transform: scaleY(1.05);
+      user-select: none;
+      text-shadow: 0 10px 16px rgba(8, 40, 58, 0.08);
+    }
+
+    .ypl-text span {
+      display: inline-block;
+      transform: translateY(8px);
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      width: min(700px, 90vw);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      transform: translateY(110px);
+    }
+
+    .title {
+      text-align: center;
+      color: rgba(255,255,255,0.9);
+      font-size: clamp(22px, 3vw, 34px);
+      letter-spacing: -0.04em;
+      font-weight: 700;
+      text-transform: none;
+      margin-top: 18px;
+    }
+
+    .meta {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .item {
+      width: min(88vw, 400px);
+      height: 56px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: rgba(255,255,255,0.9);
+      font-size: clamp(18px, 2vw, 26px);
+      letter-spacing: -0.03em;
+      font-weight: 500;
+      backdrop-filter: blur(3px);
+    }
+
+    .item .emoji {
+      font-size: 22px;
+      width: 30px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btns {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .btn {
+      width: min(88vw, 420px);
+      height: 58px;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: clamp(18px, 2vw, 26px);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      transition: transform 0.2s ease, filter 0.2s ease;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #0071e3 0%, #0077ed 100%);
-      color: white;
-      box-shadow: 0 12px 30px rgba(0, 113, 227, 0.3);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 40px rgba(0, 113, 227, 0.4);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(0);
+      background: linear-gradient(180deg, var(--blue-button) 0%, var(--blue-button-2) 100%);
+      color: var(--button-text);
+      border: 1px solid rgba(122, 205, 255, 0.35);
+      box-shadow: 0 12px 30px rgba(13, 104, 191, 0.25);
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.12);
     }
 
-    .btn-secondary:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.15);
+    .btn:hover {
       transform: translateY(-1px);
+      filter: brightness(1.04);
     }
 
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .support-link {
+    .support {
+      margin-top: 8px;
       text-align: center;
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 14px;
-      line-height: 1.4;
-      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.75);
+      font-size: 16px;
+      letter-spacing: -0.02em;
     }
 
-    .support-link strong {
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 600;
+    .support strong {
+      color: rgba(255,255,255,0.95);
+      font-weight: 700;
     }
 
     @media (max-width: 480px) {
-      .container {
-        padding: 30px 16px;
-      }
-
-      .hex-logo {
-        width: 110px;
-        height: 110px;
-      }
-
-      h1 {
-        font-size: 32px;
-      }
-
-      .subtitle {
-        font-size: 16px;
-      }
-
-      .card {
-        padding: 24px 16px;
-      }
+      .page { padding: 18px; }
+      .content { transform: translateY(70px); }
+      .item { height: 52px; }
+      .btn { height: 52px; }
+      .ypl-text { font-size: clamp(7.5rem, 36vw, 15rem); }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo-section">
-      <div class="hex-logo"></div>
-    </div>
-
-    <div class="header">
-      <h1>YPL Verify</h1>
-      <p class="subtitle">Secure account verification to unlock full access</p>
-    </div>
-
-    <div class="card">
-      <div class="feature-grid">
-        <div class="feature">
-          <div class="feature-icon">🔒</div>
-          <div class="feature-text">Alt Check</div>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🌐</div>
-          <div class="feature-text">Network Check</div>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">✓</div>
-          <div class="feature-text">Discord Link</div>
-        </div>
-      </div>
-
-      <div class="button-group">
-        <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">
-          <span>Begin Verification</span>
-          <span>→</span>
-        </button>
-
-        <button class="btn btn-secondary" id="support-btn" onclick="openSupport()">
-          <span>Check support</span>
-        </button>
+  <div class="page">
+    <div class="brand-wrap">
+      <div class="hex-logo">
+        <div class="hex-outer"></div>
+        <div class="hex-inner"></div>
+        <div class="ypl-text"><span>ypl</span></div>
       </div>
     </div>
 
-    <div class="support-link">
-      Check support if you <strong>can't verify</strong>
+    <div class="content">
+      <div class="title">YPL Verify</div>
+
+      <div class="meta">
+        <div class="item"><span class="emoji">🔒</span><span>Alt Check</span></div>
+        <div class="item"><span class="emoji">🌐</span><span>Network Check</span></div>
+        <div class="item"><span class="emoji">✓</span><span>Discord Link</span></div>
+      </div>
+
+      <div class="btns">
+        <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">YPL Verify</button>
+        <button class="btn btn-secondary" id="support-btn" onclick="openSupport()">Check support</button>
+      </div>
+
+      <div class="support">
+        Check support if you <strong>can't verify</strong>
+      </div>
     </div>
   </div>
 
   <script>
-    const messages = [
+    const messageList = [
       "Checking device...",
       "Checking network...",
       "Checking alt data...",
@@ -271,19 +266,18 @@
     let messageIndex = 0;
 
     async function startVerification() {
-      const btn = document.getElementById('verify-btn');
+      const verifyBtn = document.getElementById('verify-btn');
       const supportBtn = document.getElementById('support-btn');
-      const subtitle = document.querySelector('.subtitle');
-      const originalSubtitle = subtitle.textContent;
+      const title = document.querySelector('.title');
 
-      btn.disabled = true;
+      verifyBtn.disabled = true;
       supportBtn.disabled = true;
 
-      messageIndex = 0;
+      title.textContent = 'Verifying...';
 
       const interval = setInterval(() => {
-        if (messageIndex < messages.length) {
-          subtitle.textContent = messages[messageIndex];
+        if (messageIndex < messageList.length) {
+          title.textContent = messageList[messageIndex];
           messageIndex++;
         } else {
           clearInterval(interval);
@@ -333,7 +327,7 @@
         }
       } catch {}
 
-      await new Promise(resolve => setTimeout(resolve, 3500));
+      await new Promise(resolve => setTimeout(resolve, 3200));
 
       const params = new URLSearchParams({
         user_id: userId,
@@ -349,7 +343,7 @@
     }
 
     function openSupport() {
-      alert('Support: If you cannot verify, contact the YPL support team with your account ID and a screenshot of this page.');
+      alert("Support: If you can't verify, contact the YPL support team with your account ID and screenshot.");
     }
   </script>
 </body>
