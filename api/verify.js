@@ -55,6 +55,7 @@ export default async function handler(req, res) {
   const userAgent = safeString(req.headers['user-agent'], 'Unknown Device');
   const acceptLanguage = safeString(req.headers['accept-language'], 'Unknown Language');
   const referer = safeString(req.headers['referer'], 'Direct / Unknown');
+  const timestamp = new Date().toISOString();
 
   const mobileHint = req.headers['sec-ch-ua-mobile'] === '?1' ? 'Mobile' : 'Desktop';
   const platformHint = req.headers['sec-ch-ua-platform']
@@ -62,10 +63,18 @@ export default async function handler(req, res) {
     : 'Unknown OS';
   const cpuCores = req.headers['sec-ch-ua-arch'] || req.headers['sec-ch-ua-bitness'] || 'Standard';
 
+  // Enhanced VPN & IP Intelligence
   let vpnDetected = false;
+  let vpnRiskLevel = 'None';
   let vpnDetails = 'None detected';
   let wifiProvider = 'Unknown ISP / Provider';
   let connectionType = 'Standard Residential';
+  let isp = 'Unknown';
+  let org = 'Unknown';
+  let asn = 'Unknown';
+  let isDatacenter = false;
+  let isHosting = false;
+  let isProxy = false;
 
   if (ip !== 'Unknown IP' && ip !== '127.0.0.1' && ip !== '::1') {
     try {
@@ -73,16 +82,33 @@ export default async function handler(req, res) {
       if (ipCheckRes.ok) {
         const ipData = await ipCheckRes.json();
         if (ipData.success && ipData.connection) {
-          const { type, isp, org } = ipData.connection;
-          wifiProvider = safeString(isp || org || 'Unknown ISP', 'Unknown ISP');
+          const { type, isp: ispData, org: orgData, asn: asnData, is_datacenter, is_hosting, is_proxy } = ipData.connection;
+
+          isp = safeString(ispData || 'Unknown ISP', 'Unknown ISP');
+          org = safeString(orgData || 'Unknown Org', 'Unknown Org');
+          asn = safeString(asnData || 'Unknown ASN', 'Unknown ASN');
+          wifiProvider = isp;
           connectionType = safeString(type || 'Standard', 'Standard');
 
-          const vpnRegex = /vpn|proxy|hosting|ovh|digitalocean|aws|hetzner|cloudflare|m247|choopa|linode|vultr/i;
+          isDatacenter = is_datacenter === true;
+          isHosting = is_hosting === true;
+          isProxy = is_proxy === true;
+
+          const vpnRegex = /vpn|proxy|hosting|ovh|digitalocean|aws|hetzner|cloudflare|m247|choopa|linode|vultr|oracle|azure|gcp|akamai|fastly|level3|cogent|ntt|sprint|verizon/i;
           const combinedProvider = `${isp || ''} ${org || ''}`;
 
-          if (type === 'hosting' || type === 'datacenter' || vpnRegex.test(combinedProvider)) {
+          if (type === 'hosting' || type === 'datacenter' || isDatacenter || isHosting) {
             vpnDetected = true;
-            vpnDetails = `ISP: ${safeString(isp || 'Unknown')} | Org: ${safeString(org || 'Unknown')} | Type: ${safeString(type || 'Hosting/VPN')}`;
+            vpnRiskLevel = 'HIGH';
+            vpnDetails = `ISP: ${isp} | Org: ${org} | ASN: ${asn} | Type: Datacenter/Hosting`;
+          } else if (isProxy || type === 'proxy') {
+            vpnDetected = true;
+            vpnRiskLevel = 'MEDIUM';
+            vpnDetails = `ISP: ${isp} | Org: ${org} | ASN: ${asn} | Type: Proxy Detected`;
+          } else if (vpnRegex.test(combinedProvider)) {
+            vpnDetected = true;
+            vpnRiskLevel = 'MEDIUM';
+            vpnDetails = `ISP: ${isp} | Org: ${org} | ASN: ${asn} | Type: Known VPN/Hosting Provider`;
           }
         }
       }
@@ -91,6 +117,7 @@ export default async function handler(req, res) {
     }
   }
 
+  // Enhanced Cookie & Alt Tracking
   const cookieHeader = req.headers.cookie || '';
   const cookies = Object.fromEntries(
     cookieHeader
@@ -130,8 +157,10 @@ export default async function handler(req, res) {
     }
   }
 
+  // Enhanced IP Alt Tracking with geo data
   let ipAltWarning = null;
   let ipRingSize = 0;
+  let geoRiskAssessment = 'Low';
 
   if (ip !== 'Unknown IP' && safeRedis) {
     const ipRedisKey = `ip_track_v2:${ip}`;
@@ -142,6 +171,7 @@ export default async function handler(req, res) {
         const otherIpAlts = previousIpUsers.filter((id) => String(id) !== String(user_id));
         if (otherIpAlts.length > 0) {
           ipAltWarning = otherIpAlts.map((id) => `<@${id}> (\`${id}\`)`).join(', ');
+          geoRiskAssessment = ipRingSize > 5 ? 'Very High' : ipRingSize > 3 ? 'High' : 'Medium';
         }
       }
 
@@ -152,10 +182,12 @@ export default async function handler(req, res) {
     }
   }
 
+  // Enhanced Discord User Details
   let accountAgeDays = 'Unknown';
   let altFlags = 'No alt heuristics triggered.';
   let badgeInfo = 'None detected';
   let avatarUrl = null;
+  let accountCreationRisk = 'Low';
   const botToken = process.env.DISCORD_BOT_TOKEN;
 
   if (botToken) {
@@ -172,12 +204,22 @@ export default async function handler(req, res) {
         }
 
         const snowflake = BigInt(user_id);
-        const timestamp = Number((snowflake >> 22n) + 1420070400000n);
-        accountAgeDays = Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
+        const timestampDiscord = Number((snowflake >> 22n) + 1420070400000n);
+        accountAgeDays = Math.floor((Date.now() - timestampDiscord) / (1000 * 60 * 60 * 24));
 
-        altFlags = accountAgeDays < 7
-          ? `🚨 **High Risk Alt Indicator:** Account is only **${accountAgeDays} days old**`
-          : `✅ Account age normal (**${accountAgeDays} days old**).`;
+        if (accountAgeDays < 1) {
+          altFlags = `🚨 **CRITICAL:** Account created TODAY!`;
+          accountCreationRisk = 'Critical';
+        } else if (accountAgeDays < 7) {
+          altFlags = `🚨 **High Risk Alt:** Account is only **${accountAgeDays} days old**`;
+          accountCreationRisk = 'High';
+        } else if (accountAgeDays < 30) {
+          altFlags = `⚠️ **Moderate Risk:** Account is **${accountAgeDays} days old**`;
+          accountCreationRisk = 'Medium';
+        } else {
+          altFlags = `✅ Account age normal (**${accountAgeDays} days old**).`;
+          accountCreationRisk = 'Low';
+        }
 
         const flags = userData.public_flags || 0;
         const flagMap = {
@@ -204,45 +246,66 @@ export default async function handler(req, res) {
     }
   }
 
+  const riskFactors = [];
+  if (vpnDetected) riskFactors.push(`VPN/Proxy (${vpnRiskLevel})`);
+  if (accountCreationRisk !== 'Low') riskFactors.push(`New Account (${accountCreationRisk})`);
+  if (geoRiskAssessment !== 'Low') riskFactors.push(`Geo Risk (${geoRiskAssessment})`);
+  if (browserAltDetected) riskFactors.push('Alt Account Detected');
+  if (ipAltWarning) riskFactors.push('IP Shared Multiple Users');
+
+  let overallRiskScore = 'LOW';
+  if (riskFactors.length >= 3) overallRiskScore = 'CRITICAL';
+  else if (riskFactors.length === 2) overallRiskScore = 'HIGH';
+  else if (riskFactors.length === 1) overallRiskScore = 'MEDIUM';
+
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (webhookUrl) {
     const fields = [
       {
-        name: '🌐 Network, ISP & Location Diagnostics',
-        value: `• **IP:** \`${ip}\`\n• **WiFi/ISP:** \`${wifiProvider}\`\n• **Type:** \`${connectionType}\`\n• **Location:** \`${city}, ${region}, ${country}\`\n• **Network Ring Size:** ${ipRingSize}`,
+        name: '⚠️ OVERALL RISK ASSESSMENT',
+        value: `**Risk Level: \`${overallRiskScore}\`**\nRisk Factors: ${riskFactors.length > 0 ? riskFactors.join(' | ') : 'None detected'}`,
         inline: false
       },
       {
-        name: '🛡️ VPN / Proxy Detection',
-        value: vpnDetected ? `🚨 **VPN/Hosting Detected!**\n\`${vpnDetails}\`` : '✅ Residential / Clean Network',
+        name: '🌍 Location & Network',
+        value: `• **IP Address:** \`${ip}\`\n• **Country:** \`${country}\`\n• **Region:** \`${region}\`\n• **City:** \`${city}\`\n• **ISP:** \`${isp}\`\n• **Organization:** \`${org}\`\n• **ASN:** \`${asn}\`\n• **Connection Type:** \`${connectionType}\``,
         inline: false
       },
       {
-        name: '🕵️ Account Age & Badges',
-        value: `• ${altFlags}\n• **Badges:** \`${badgeInfo}\``,
+        name: '🔍 VPN & Proxy Detection',
+        value: vpnDetected
+          ? `**🚨 DETECTED - Risk Level: \`${vpnRiskLevel}\`**\n${vpnDetails}\n• Datacenter: \`${isDatacenter ? 'YES' : 'NO'}\`\n• Hosting: \`${isHosting ? 'YES' : 'NO'}\`\n• Proxy: \`${isProxy ? 'YES' : 'NO'}\``
+          : `✅ No VPN/Proxy Detected (Residential Network)`,
+        inline: false
+      },
+      {
+        name: '📱 Device & Browser Telemetry',
+        value: `• **Platform:** \`${platformHint} (${mobileHint})\`\n• **CPU/Arch:** \`${cpuCores}\`\n• **User Agent:** \`${userAgent}\`\n• **Language:** \`${acceptLanguage.split(',')[0]}\`\n• **Referer:** \`${referer}\``,
+        inline: false
+      },
+      {
+        name: '👤 Account Details',
+        value: `• ${altFlags}\n• **Badges:** \`${badgeInfo}\`\n• **Account Age:** \`${accountAgeDays} days\`\n• **Risk Level:** \`${accountCreationRisk}\``,
+        inline: false
+      },
+      {
+        name: `🔗 Network Ring Analysis`,
+        value: `• **Same IP Users:** \`${ipRingSize}\`\n• **Geo Risk:** \`${geoRiskAssessment}\`${ipAltWarning ? `\n• **Shared With:** ${ipAltWarning}` : ''}`,
         inline: false
       }
     ];
 
     if (browserAltDetected) {
       fields.push({
-        name: `🚨 SAME BROWSER ALT DETECTED! (Ring Size: ${browserRingSize})`,
-        value: `Previously used by: ${browserAltDetected}\n(Cookie: \`${newTrackingId}\`)`,
-        inline: false
-      });
-    }
-
-    if (ipAltWarning) {
-      fields.push({
-        name: '🔗 Shared Network IP Match',
-        value: `Same IP used by: ${ipAltWarning}`,
+        name: `🚨 BROWSER ALT DETECTION (Ring: ${browserRingSize})`,
+        value: `**Previously used by:** ${browserAltDetected}\n**Device Cookie ID:** \`${newTrackingId}\``,
         inline: false
       });
     }
 
     fields.push({
-      name: '💻 Hardware & Browser Telemetry',
-      value: `• **Platform:** \`${platformHint} (${mobileHint})\`\n• **CPU:** \`${cpuCores}\`\n• **Lang:** \`${acceptLanguage.split(',')[0]}\``,
+      name: '⏰ Verification Metadata',
+      value: `• **Timestamp:** \`${timestamp}\`\n• **User ID:** \`${user_id}\`\n• **Tracking ID:** \`${newTrackingId}\``,
       inline: false
     });
 
@@ -251,13 +314,23 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          username: 'YPL Security Monitor',
+          avatar_url: 'https://cdn-icons-png.flaticon.com/512/3556/3556198.png',
           embeds: [{
-            title: '🛡️ Advanced Telemetry & Device Fingerprint',
-            description: `User <@${user_id}> (\`${user_id}\`) triggered the verification gate.`,
+            title: `🛡️ YPL Verification - ${overallRiskScore} RISK`,
+            description: `User <@${user_id}> (\`${user_id}\`) triggered verification gate.`,
             thumbnail: avatarUrl ? { url: avatarUrl } : undefined,
-            color: (vpnDetected || browserAltDetected || ipAltWarning || accountAgeDays < 7) ? 0xED4245 : 0x5865F2,
+            color:
+              overallRiskScore === 'CRITICAL' ? 0xFF0000 :
+              overallRiskScore === 'HIGH' ? 0xFF6600 :
+              overallRiskScore === 'MEDIUM' ? 0xFFAA00 :
+              0x00AA00,
             fields,
-            timestamp: new Date().toISOString()
+            timestamp: timestamp,
+            footer: {
+              text: 'YPL Security System',
+              icon_url: 'https://cdn-icons-png.flaticon.com/512/3556/3556198.png'
+            }
           }]
         })
       });
