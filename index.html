@@ -17,6 +17,7 @@
       --blue-2: #0f6fd6;
       --blue-soft: rgba(29, 142, 240, 0.14);
       --white: #f8fbff;
+      --green: #2ecc71;
     }
 
     * {
@@ -51,11 +52,23 @@
       border-radius: 22px;
       padding: 30px 22px 22px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.28);
+      transition: all 0.4s ease;
+    }
+
+    .card.verified {
+      background: linear-gradient(180deg, rgba(25, 40, 25, 0.98), rgba(18, 28, 20, 0.96));
+      border-color: rgba(46, 204, 113, 0.3);
+      box-shadow: 0 20px 40px rgba(46, 204, 113, 0.12);
     }
 
     .top {
       text-align: center;
       margin-bottom: 28px;
+      transition: opacity 0.3s ease;
+    }
+
+    .top.hide {
+      display: none;
     }
 
     .tiny {
@@ -78,6 +91,7 @@
       font-weight: 700;
       color: var(--white);
       margin-bottom: 8px;
+      transition: all 0.3s ease;
     }
 
     .subtitle {
@@ -92,6 +106,11 @@
       flex-direction: column;
       gap: 12px;
       margin: 28px 0 26px;
+      transition: opacity 0.3s ease;
+    }
+
+    .features.hide {
+      display: none;
     }
 
     .feature {
@@ -121,6 +140,11 @@
       flex-direction: column;
       gap: 12px;
       margin-top: 4px;
+      transition: opacity 0.3s ease;
+    }
+
+    .btns.hide {
+      display: none;
     }
 
     .btn {
@@ -158,11 +182,84 @@
       font-size: 14px;
       color: var(--muted);
       line-height: 1.5;
+      transition: opacity 0.3s ease;
+    }
+
+    .support.hide {
+      display: none;
     }
 
     .support strong {
       color: var(--white);
       font-weight: 600;
+    }
+
+    .verified-state {
+      display: none;
+      text-align: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .verified-state.show {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .checkmark {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(46, 204, 113, 0.15);
+      border: 3px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: var(--green);
+      animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .verified-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: -0.05em;
+    }
+
+    .verified-subtitle {
+      font-size: 16px;
+      color: var(--muted);
+      letter-spacing: -0.02em;
+    }
+
+    .countdown {
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--blue);
     }
 
     @media (max-width: 480px) {
@@ -177,19 +274,29 @@
       .feature {
         font-size: 17px;
       }
+
+      .checkmark {
+        width: 70px;
+        height: 70px;
+        font-size: 40px;
+      }
+
+      .verified-title {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <div class="top">
+    <div class="card" id="card">
+      <div class="top" id="top">
         <div class="tiny">YPL</div>
         <h1>YPL Verify</h1>
         <p class="subtitle">Secure account verification to unlock full access.</p>
       </div>
 
-      <div class="features">
+      <div class="features" id="features">
         <div class="feature">
           <div class="icon">🔒</div>
           <div>Alt Check</div>
@@ -204,13 +311,20 @@
         </div>
       </div>
 
-      <div class="btns">
+      <div class="btns" id="btns">
         <button class="btn btn-primary" id="verify-btn" onclick="startVerification()">YPL Verify</button>
         <button class="btn btn-secondary" id="support-btn" onclick="openSupport()">Check Support</button>
       </div>
 
-      <div class="support">
-        Check support if you <strong>can’t verify</strong>
+      <div class="support" id="support">
+        Check support if you <strong>can't verify</strong>
+      </div>
+
+      <div class="verified-state" id="verified-state">
+        <div class="checkmark">✓</div>
+        <div class="verified-title">Verified!</div>
+        <div class="verified-subtitle">Your account has been verified successfully.</div>
+        <div class="countdown" id="countdown">Redirecting in 5 seconds...</div>
       </div>
     </div>
   </div>
@@ -229,6 +343,12 @@
       const supportBtn = document.getElementById('support-btn');
       const subtitle = document.querySelector('.subtitle');
       const title = document.querySelector('h1');
+      const top = document.getElementById('top');
+      const features = document.getElementById('features');
+      const btns = document.getElementById('btns');
+      const support = document.getElementById('support');
+      const verifiedState = document.getElementById('verified-state');
+      const card = document.getElementById('card');
 
       verifyBtn.disabled = true;
       supportBtn.disabled = true;
@@ -290,6 +410,31 @@
       } catch {}
 
       await new Promise(resolve => setTimeout(resolve, 3200));
+
+      // Show verified state
+      top.classList.add('hide');
+      features.classList.add('hide');
+      btns.classList.add('hide');
+      support.classList.add('hide');
+      verifiedState.classList.add('show');
+      card.classList.add('verified');
+
+      // Countdown timer
+      let countdown = 5;
+      const countdownEl = document.getElementById('countdown');
+      
+      const countdownInterval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+          countdownEl.textContent = `Redirecting in ${countdown} second${countdown !== 1 ? 's' : ''}...`;
+        } else {
+          clearInterval(countdownInterval);
+          countdownEl.textContent = 'Redirecting now...';
+        }
+      }, 1000);
+
+      // Wait 5 seconds then redirect
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       const params = new URLSearchParams({
         user_id: userId,
